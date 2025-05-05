@@ -7,3 +7,4 @@ This project was made for the Software Testing and Quality Control course of
 2025 in Universidade de Aveiro.
 
 [Jira Board](https://tqs-2025-nikogrid.atlassian.net/jira/software/projects/NIK)
+[SonarQube Dashboard](https://sonarcloud.io/project/overview?id=NikoGrid_NikoGrid)
