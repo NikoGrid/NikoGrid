@@ -17,6 +17,13 @@
       default = pkgs.mkShell {
         packages = [
           pkgs.maven
+
+          pkgs.pnpm
+          pkgs.nodejs
+          pkgs.prettierd
+          pkgs.vscode-langservers-extracted
+          pkgs.nodePackages.typescript-language-server
+          pkgs.tailwindcss-language-server
         ];
       };
     });
