@@ -11,7 +11,7 @@ export const Route = createRootRoute({
         content: "The perfect place for all your charging needs",
       },
     ],
-    links: [{ rel: "icon", href: "" }],
+    links: [{ rel: "icon", href: "meow" }],
   }),
   notFoundComponent: () => "404 Not Found",
 });
@@ -20,7 +20,6 @@ function RootComponent() {
   return (
     <>
       <HeadContent />
-      <div>Hello "__root"!</div>
       <Outlet />
       <Devtools />
     </>
