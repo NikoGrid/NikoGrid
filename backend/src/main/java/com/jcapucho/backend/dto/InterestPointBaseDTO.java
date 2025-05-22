@@ -5,8 +5,11 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.jcapucho.backend.entities.InterestPoint;
 import com.jcapucho.backend.repositories.projections.LocationListing;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+@Schema(title = "InterestPoint")
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         include = JsonTypeInfo.As.PROPERTY,
@@ -16,6 +19,7 @@ import lombok.EqualsAndHashCode;
         @JsonSubTypes.Type(value = ClusterInterestPoint.class, name = ClusterInterestPoint.DISCRIMINATOR),
         @JsonSubTypes.Type(value = LocationInterestPoint.class, name = LocationInterestPoint.DISCRIMINATOR)
 })
+@ToString
 @EqualsAndHashCode
 public abstract sealed class InterestPointBaseDTO permits ClusterInterestPoint, LocationInterestPoint {
     @JsonProperty("lat")

@@ -1,6 +1,7 @@
 package com.jcapucho.backend;
 
 import com.jcapucho.backend.exceptions.ResourceNotFound;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -76,6 +77,7 @@ public class ErrorHandler {
 
     // Thrown by spring security
 
+    @Hidden
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(AuthenticationException.class)
     public ErrorResponse handleAuthenticationException(AuthenticationException ex) {
@@ -83,6 +85,7 @@ public class ErrorHandler {
                 .build();
     }
 
+    @Hidden
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ErrorResponse handleAuthorizationException(AuthorizationDeniedException ex) {
