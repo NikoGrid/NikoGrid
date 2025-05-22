@@ -8,6 +8,11 @@ import com.jcapucho.backend.dto.LocationInterestPoint;
 import com.jcapucho.backend.entities.Location;
 import com.jcapucho.backend.exceptions.ResourceNotFound;
 import com.jcapucho.backend.services.LocationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -50,6 +55,12 @@ public class LocationController {
     }
 
     @GetMapping("/nearby")
+    @Operation(responses = {@ApiResponse(
+            responseCode = "200",
+            content = @Content(array = @ArraySchema(
+                    schema = @Schema(oneOf = {ClusterInterestPoint.class, LocationInterestPoint.class}))
+            )
+    )})
     public Collection<InterestPointBaseDTO> getNearbyLocations(
             @RequestParam("w") @Min(-180) @Max(180) float west,
             @RequestParam("e") @Min(-180) @Max(180) float east,
