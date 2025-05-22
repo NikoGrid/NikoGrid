@@ -10,6 +10,7 @@ class BackendApplicationTests {
 
     @Test
     void contextLoads() {
+        // Test that the spring application context loads correctly
     }
 
 }
