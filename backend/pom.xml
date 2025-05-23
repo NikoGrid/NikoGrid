@@ -34,7 +34,9 @@
 
         <sonar.organization>nikogrid</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.exclusions>src/main/java/com/jcapucho/backend/ErrorHandler.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>
+            src/main/java/com/nikogrid/backend/BackendApplication.java,src/main/java/com/nikogrid/backend/ErrorHandler.java
+        </sonar.coverage.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>
             target/site/jacoco-merged-test-coverage-report/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
@@ -228,7 +230,8 @@
 
                 <configuration>
                     <excludes>
-                        <exclude>com/jcapucho/backend/ErrorHandler.class</exclude>
+                        <exclude>com/nikogrid/backend/BackendApplication.class</exclude>
+                        <exclude>com/nikogrid/backend/ErrorHandler.class</exclude>
                     </excludes>
                 </configuration>
 
