@@ -1,4 +1,4 @@
-package com.jcapucho.backend;
+package com.nikogrid.backend;
 
 import org.springframework.boot.SpringApplication;
 
