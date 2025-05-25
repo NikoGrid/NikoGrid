@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.nikogrid.backend.entities.InterestPoint;
 import com.nikogrid.backend.repositories.projections.LocationListing;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -22,9 +23,11 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public abstract sealed class InterestPointBaseDTO permits ClusterInterestPoint, LocationInterestPoint {
+    @NotNull
     @JsonProperty("lat")
     public final float latitude;
 
+    @NotNull
     @JsonProperty("lon")
     public final float longitude;
 

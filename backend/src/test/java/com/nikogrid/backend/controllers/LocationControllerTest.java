@@ -30,6 +30,7 @@ import java.util.List;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,13 +60,14 @@ class LocationControllerTest {
     void createLocationNoAuth() throws Exception {
         final CreateLocation req = new CreateLocation(
                 "Test",
-                30,
-                20
+                30F,
+                20F
         );
 
         mvc.perform(post("/api/v1/locations/")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(req)))
+                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
@@ -74,8 +76,8 @@ class LocationControllerTest {
     void createLocationBadRequest() throws Exception {
         final CreateLocation req = new CreateLocation(
                 "",
-                180,
-                360
+                180F,
+                360F
         );
 
         mvc.perform(post("/api/v1/locations/")
@@ -98,8 +100,8 @@ class LocationControllerTest {
 
         final CreateLocation req = new CreateLocation(
                 "Good",
-                20,
-                30
+                20F,
+                30F
         );
 
         final LocationDTO expected = new LocationDTO(

@@ -3,6 +3,7 @@ package com.nikogrid.backend.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.SchemaProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -12,7 +13,10 @@ import lombok.ToString;
 public final class LocationInterestPoint extends InterestPointBaseDTO {
     public static final String DISCRIMINATOR = "L";
 
+    @NotNull
     public final long id;
+
+    @NotNull
     @JsonProperty("n")
     public final String name;
 

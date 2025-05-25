@@ -1,18 +1,11 @@
 package com.nikogrid.backend.controllers;
 
-import com.nikogrid.backend.dto.ClusterInterestPoint;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
-import com.nikogrid.backend.dto.LocationInterestPoint;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.LocationService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -55,12 +48,6 @@ public class LocationController {
     }
 
     @GetMapping("/nearby")
-    @Operation(responses = {@ApiResponse(
-            responseCode = "200",
-            content = @Content(array = @ArraySchema(
-                    schema = @Schema(oneOf = {ClusterInterestPoint.class, LocationInterestPoint.class}))
-            )
-    )})
     public Collection<InterestPointBaseDTO> getNearbyLocations(
             @RequestParam("w") @Min(-180) @Max(180) float west,
             @RequestParam("e") @Min(-180) @Max(180) float east,
