@@ -1,5 +1,6 @@
 package com.nikogrid.backend.controllers;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestcontainersConfiguration;
@@ -67,6 +68,7 @@ class LocationControllerIT {
 
     @Test
     @WithMockUser
+    @Requirement("NIK-20")
     void createLocationOk() throws Exception {
         final CreateLocation req = new CreateLocation(
                 "Test",
@@ -95,6 +97,7 @@ class LocationControllerIT {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getNearbyLocationsOk() throws Exception {
         final Location noCluster = createTestLocation("Test3", 15, 15);
 
@@ -131,6 +134,7 @@ class LocationControllerIT {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableLocationNotFound() throws Exception {
         final Location closestNoChargers = createTestLocation("Test1", 1, 0);
         final Location closestNoAvailable = createTestLocation("Test1", 0, 1);
@@ -152,6 +156,7 @@ class LocationControllerIT {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableLocationOk() throws Exception {
         final Location closestNoChargers = createTestLocation("Test1", 1, 0);
         final Location closestNoAvailable = createTestLocation("Test1", 0, 1);
@@ -189,6 +194,7 @@ class LocationControllerIT {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationByIdNotFound() throws Exception {
         mvc.perform(get("/api/v1/locations/1"))
                 .andExpect(status().isNotFound())
@@ -196,6 +202,7 @@ class LocationControllerIT {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationByIdOk() throws Exception {
         final Location loc = createTestLocation("Test", 20, 30);
 
