@@ -2,6 +2,7 @@ package com.nikogrid.backend.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.SchemaProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
@@ -11,6 +12,7 @@ import lombok.ToString;
 public final class ClusterInterestPoint extends InterestPointBaseDTO {
     public static final String DISCRIMINATOR = "C";
 
+    @NotNull
     public final long numPoints;
 
     public ClusterInterestPoint(float longitude, float latitude, long numPoints) {
