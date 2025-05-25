@@ -1,5 +1,6 @@
 package com.nikogrid.backend.repositories;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.nikogrid.backend.TestcontainersConfiguration;
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
@@ -21,6 +22,7 @@ class ChargerRepositoryTest {
     private ChargerRepository chargerRepository;
 
     @Test
+    @Requirement("NIK-20")
     void chargerSaveWorks() {
         final Location location = new Location();
         location.setName("Test location");

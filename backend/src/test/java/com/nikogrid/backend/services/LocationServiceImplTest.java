@@ -1,5 +1,6 @@
 package com.nikogrid.backend.services;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.nikogrid.backend.dto.ClusterInterestPoint;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
@@ -36,6 +37,7 @@ class LocationServiceImplTest {
     private LocationServiceImpl locationService;
 
     @Test
+    @Requirement("NIK-20")
     void createLocationPersists() {
         final Location location = new Location();
         location.setName("Test");
@@ -49,6 +51,7 @@ class LocationServiceImplTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationByIdReturnsFound() throws ResourceNotFound {
         final Location location = new Location();
         location.setName("Test");
@@ -63,6 +66,7 @@ class LocationServiceImplTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationByIdThrowsNotFound() {
         Mockito.when(this.locationRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -71,6 +75,7 @@ class LocationServiceImplTest {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableReturnsFound() throws ResourceNotFound {
         final Location location = new Location();
         location.setName("Test");
@@ -86,6 +91,7 @@ class LocationServiceImplTest {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableThrowsNotFound() {
         Mockito.when(this.locationRepository.findClosestAvailable(Mockito.anyFloat(), Mockito.anyFloat()))
                 .thenReturn(Optional.empty());
@@ -95,6 +101,7 @@ class LocationServiceImplTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getNearbyLocationsClusterZoom() {
         final InterestPoint ip1 = new InterestPoint(
                 2,
@@ -133,6 +140,7 @@ class LocationServiceImplTest {
 
 
     @Test
+    @Requirement("NIK-37")
     void getNearbyLocationsNoClusterZoom() {
         final LocationListing l1 = createLocationListing(1L, "Test1", 21.5f, 30.0f);
         final LocationListing l2 = createLocationListing(2L, "Test2", 22.5f, 30.0f);

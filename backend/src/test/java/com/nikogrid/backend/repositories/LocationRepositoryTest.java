@@ -1,5 +1,6 @@
 package com.nikogrid.backend.repositories;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.nikogrid.backend.TestcontainersConfiguration;
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.InterestPoint;
@@ -30,6 +31,7 @@ class LocationRepositoryTest {
     private LocationRepository locationRepository;
 
     @Test
+    @Requirement("NIK-20")
     void locationSaveWorks() {
         final Location location = new Location();
         location.setName("Test location");
@@ -43,6 +45,7 @@ class LocationRepositoryTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void findInterestPointsReturnsClustered() {
         final float[][] points = {
                 // Cluster 1
@@ -83,6 +86,7 @@ class LocationRepositoryTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationsInEnvelopeReturnsInside() {
         final float[][] points = {
                 // Inside
@@ -116,6 +120,7 @@ class LocationRepositoryTest {
     }
 
     @Test
+    @Requirement("NIK-24")
     void findClosestAvailableReturnsAvailable() {
         final Location location1 = new Location();
         location1.setName("1");
@@ -172,6 +177,7 @@ class LocationRepositoryTest {
 
 
     @Test
+    @Requirement("NIK-24")
     void findClosestAvailableReturnsEmpty() {
         final Location location1 = new Location();
         location1.setName("1");

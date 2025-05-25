@@ -1,5 +1,6 @@
 package com.nikogrid.backend.controllers;
 
+import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.configurations.SecurityConfig;
 import com.nikogrid.backend.dto.ClusterInterestPoint;
@@ -57,6 +58,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-20")
     void createLocationNoAuth() throws Exception {
         final CreateLocation req = new CreateLocation(
                 "Test",
@@ -73,6 +75,7 @@ class LocationControllerTest {
 
     @Test
     @WithMockUser
+    @Requirement("NIK-20")
     void createLocationBadRequest() throws Exception {
         final CreateLocation req = new CreateLocation(
                 "",
@@ -91,6 +94,7 @@ class LocationControllerTest {
 
     @Test
     @WithMockUser
+    @Requirement("NIK-20")
     void createLocationOk() throws Exception {
         Mockito.when(locationService.createLocation(Mockito.any())).thenAnswer(i -> {
             final Location l = i.getArgument(0);
@@ -137,6 +141,7 @@ class LocationControllerTest {
             1,0,0,1,0
             0,1,1,0,0
             """)
+    @Requirement("NIK-37")
     void getNearbyLocationsBadData(float west, float east, float south, float north, int zoom) throws Exception {
         mvc.perform(get("/api/v1/locations/nearby")
                         .param("w", Float.toString(west))
@@ -158,6 +163,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getNearbyLocationsOk() throws Exception {
         final List<InterestPointBaseDTO> res = List.of(
                 new ClusterInterestPoint(21.5f, 30.0f, 2),
@@ -193,6 +199,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableLocationBadData() throws Exception {
         mvc.perform(get("/api/v1/locations/closest")
                         .param("lat", "-190")
@@ -208,6 +215,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableLocationNotFound() throws Exception {
         Mockito.when(locationService.getClosestAvailable(
                 Mockito.anyFloat(),
@@ -228,6 +236,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-24")
     void getClosestAvailableLocationOk() throws Exception {
         final Location location = new Location();
         location.setId(1L);
@@ -257,6 +266,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationByIdNotFound() throws Exception {
         Mockito.when(locationService.getLocationById(1L)).thenThrow(new ResourceNotFound());
 
@@ -268,6 +278,7 @@ class LocationControllerTest {
     }
 
     @Test
+    @Requirement("NIK-37")
     void getLocationByIdOk() throws Exception {
         final Location location = new Location();
         location.setId(1L);
