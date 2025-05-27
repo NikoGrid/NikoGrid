@@ -1,10 +1,12 @@
 package com.nikogrid.backend;
 
+import com.nikogrid.backend.exceptions.DuplicateUserException;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.ErrorResponse;
@@ -99,6 +101,20 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleResourceNotFound(ResourceNotFound exc) {
         return ErrorResponse.builder(exc, HttpStatus.NOT_FOUND, "The specified resource was not found")
+                .build();
+    }
+
+    @ExceptionHandler(DuplicateUserException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDuplicateUserException(DuplicateUserException exc) {
+        return ErrorResponse.builder(exc, HttpStatus.CONFLICT, "Email already taken")
+                .build();
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleBadCredentialsException(BadCredentialsException exc) {
+        return ErrorResponse.builder(exc, HttpStatus.UNAUTHORIZED, "Invalid credentials")
                 .build();
     }
 }
