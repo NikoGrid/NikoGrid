@@ -2,13 +2,14 @@ package com.nikogrid.backend.controllers;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nikogrid.backend.ErrorHandler;
 import com.nikogrid.backend.entities.RoleName;
 import com.nikogrid.backend.dto.AuthenticationDTO;
 import com.nikogrid.backend.dto.RecoveryJwtTokenDTO;
 import com.nikogrid.backend.dto.RegisterDTO;
 import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.DuplicateUserException;
-import com.nikogrid.backend.exceptions.GlobalExceptionHandler;
+
 import com.nikogrid.backend.repositories.UserRepository;
 import com.nikogrid.backend.services.AuthenticationService;
 import com.nikogrid.backend.services.JwtTokenService;
@@ -38,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
                     org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
         }
 )
-@Import(GlobalExceptionHandler.class)
+@Import(ErrorHandler.class)
 @DisplayName("AuthenticationController Tests")
 class AuthenticationControllerTest {
 
@@ -47,6 +48,9 @@ class AuthenticationControllerTest {
 
     @MockitoBean
     private AuthenticationService authenticationService;
+
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
 
     @MockitoBean
     private UserRepository userRepository;
