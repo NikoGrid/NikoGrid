@@ -49,9 +49,6 @@ class AuthenticationControllerTest {
     private AuthenticationService authenticationService;
 
     @MockitoBean
-    private AuthenticationManager authenticationManager;
-
-    @MockitoBean
     private UserRepository userRepository;
 
     @MockitoBean
