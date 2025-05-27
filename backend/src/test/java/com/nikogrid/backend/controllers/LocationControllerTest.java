@@ -2,7 +2,8 @@ package com.nikogrid.backend.controllers;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nikogrid.backend.configurations.SecurityConfig;
+import com.nikogrid.backend.TestSecurityBeans;
+import com.nikogrid.backend.auth.SecurityConfig;
 import com.nikogrid.backend.dto.ClusterInterestPoint;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
@@ -10,6 +11,7 @@ import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
+import com.nikogrid.backend.repositories.UserRepository;
 import com.nikogrid.backend.services.LocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,17 +34,23 @@ import java.util.List;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LocationController.class)
-@Import(SecurityConfig.class)
+@Import({SecurityConfig.class, TestSecurityBeans.class})
 class LocationControllerTest {
     @Autowired
     private WebApplicationContext context;
 
     private MockMvc mvc;
+
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
+
+    @MockitoBean
+    private UserRepository userRepository;
+
 
     @MockitoBean
     private LocationService locationService;
@@ -69,7 +78,6 @@ class LocationControllerTest {
         mvc.perform(post("/api/v1/locations/")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(req)))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
