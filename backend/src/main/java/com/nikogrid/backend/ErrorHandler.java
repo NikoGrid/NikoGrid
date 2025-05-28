@@ -1,10 +1,15 @@
 package com.nikogrid.backend;
 
+import com.nikogrid.backend.exceptions.DuplicateUserException;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
+import com.nikogrid.backend.exceptions.TokenGenerationException;
+import com.nikogrid.backend.exceptions.UserNotFoundException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.ErrorResponse;
@@ -15,6 +20,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -99,6 +105,35 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleResourceNotFound(ResourceNotFound exc) {
         return ErrorResponse.builder(exc, HttpStatus.NOT_FOUND, "The specified resource was not found")
+                .build();
+    }
+
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserNotFoundException(UserNotFoundException exc, WebRequest request) {
+        return ErrorResponse.builder(exc, HttpStatus.NOT_FOUND, "The specified user was not found")
+                .build();
+    }
+
+    @ExceptionHandler(DuplicateUserException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDuplicateUserException(DuplicateUserException exc, WebRequest request) {
+        return ErrorResponse.builder(exc, HttpStatus.CONFLICT, "This user already exists")
+                .build();
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleBadCredentialsException(BadCredentialsException exc, WebRequest request) {
+        return ErrorResponse.builder(exc, HttpStatus.UNAUTHORIZED, "Invalid credentials")
+                .build();
+    }
+
+    @ExceptionHandler(TokenGenerationException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleTokenGenerationException(TokenGenerationException exc) {
+        return ErrorResponse.builder(exc, HttpStatus.INTERNAL_SERVER_ERROR, "Token generation failed")
                 .build();
     }
 }
