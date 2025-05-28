@@ -37,7 +37,6 @@ public class SecurityConfig {
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
-            "/api/v1/locations/",
             "/api/v1/locations/{id}",
             "/api/v1/locations/nearby",
             "/api/v1/locations/closest",
@@ -45,6 +44,7 @@ public class SecurityConfig {
     };
 
     private final String [] ENDPOINTS_WITH_AUTHENTICATION_REQUIRED = {
+            "/api/v1/locations/"
     };
 
     private final String [] ENDPOINTS_ADMIN = {
@@ -61,6 +61,7 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).permitAll()
+                        .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_REQUIRED).authenticated()
                         .requestMatchers(ENDPOINTS_ADMIN).hasRole("ADMIN")
                         .requestMatchers(ENDPOINTS_OWNER).hasRole("OWNER")
                         .requestMatchers(ENDPOINTS_COLLABORATOR).hasRole("COLLABORATOR")
