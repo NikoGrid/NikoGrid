@@ -2,6 +2,7 @@ package com.nikogrid.backend;
 
 import com.nikogrid.backend.exceptions.DuplicateUserException;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
+import com.nikogrid.backend.exceptions.TokenGenerationException;
 import com.nikogrid.backend.exceptions.UserNotFoundException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolationException;
@@ -126,6 +127,13 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleBadCredentialsException(BadCredentialsException exc, WebRequest request) {
         return ErrorResponse.builder(exc, HttpStatus.UNAUTHORIZED, "Invalid credentials")
+                .build();
+    }
+
+    @ExceptionHandler(TokenGenerationException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleTokenGenerationException(TokenGenerationException exc) {
+        return ErrorResponse.builder(exc, HttpStatus.INTERNAL_SERVER_ERROR, "Token generation failed")
                 .build();
     }
 }

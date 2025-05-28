@@ -176,7 +176,7 @@ class UserRepositoryTest {
                 .created_at(LocalDateTime.now())
                 .build();
 
-        User savedUser = userRepository.save(userWithMultipleRoles);
+        userRepository.save(userWithMultipleRoles);
         entityManager.flush();
 
         Optional<User> foundUser = userRepository.findByEmail("multirole@example.com");

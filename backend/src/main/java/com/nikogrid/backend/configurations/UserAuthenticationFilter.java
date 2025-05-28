@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -49,7 +50,8 @@ public class UserAuthenticationFilter extends OncePerRequestFilter {
             if (token != null) {
                 try {
                     String subject = jwtTokenService.validateToken(token);
-                    User user = userRepository.findByEmail(subject).get();
+                    User user = userRepository.findByEmail(subject)
+                            .orElseThrow(() -> new UsernameNotFoundException("User with email " + subject + " not found"));;
                     UserDetailsImpl userDetails = new UserDetailsImpl(user);
 
                     Authentication authentication =

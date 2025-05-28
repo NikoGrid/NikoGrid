@@ -7,7 +7,6 @@ import com.nikogrid.backend.entities.RoleName;
 import com.nikogrid.backend.dto.AuthenticationDTO;
 import com.nikogrid.backend.dto.RecoveryJwtTokenDTO;
 import com.nikogrid.backend.dto.RegisterDTO;
-import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.DuplicateUserException;
 
 import com.nikogrid.backend.repositories.UserRepository;
@@ -24,13 +23,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Optional;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(

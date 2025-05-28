@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.nikogrid.backend.entities.UserDetailsImpl;
+import com.nikogrid.backend.exceptions.TokenGenerationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +29,7 @@ public class JwtTokenService {
                     .withSubject(user.getUsername())
                     .sign(algorithm);
         } catch (JWTCreationException e) {
-            throw new RuntimeException("Error while generating token", e);
+            throw new TokenGenerationException("Error while generating token", e);
         }
     }
 

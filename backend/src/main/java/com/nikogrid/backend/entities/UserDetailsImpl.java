@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public class UserDetailsImpl implements UserDetails {
-    private final User user;
+    private transient final User user;
 
     public UserDetailsImpl(User user) {
         this.user = user;

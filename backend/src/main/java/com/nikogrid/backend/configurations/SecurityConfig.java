@@ -2,7 +2,6 @@ package com.nikogrid.backend.configurations;
 
 import com.nikogrid.backend.repositories.UserRepository;
 import com.nikogrid.backend.entities.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -27,12 +26,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final UserAuthenticationFilter userAuthenticationFilter;
-
-    @Autowired
-    public SecurityConfig(UserAuthenticationFilter userAuthenticationFilter) {
-        this.userAuthenticationFilter = userAuthenticationFilter;
-    }
 
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
             "/api/v1/auth/login",
@@ -57,7 +50,7 @@ public class SecurityConfig {
     };
 
     @Bean
-    public SecurityFilterChain web(HttpSecurity http) throws Exception {
+    public SecurityFilterChain web(HttpSecurity http, UserAuthenticationFilter userAuthenticationFilter) throws Exception {
         return http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).permitAll()
