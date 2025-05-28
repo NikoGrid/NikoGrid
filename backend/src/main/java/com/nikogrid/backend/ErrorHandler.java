@@ -109,17 +109,23 @@ public class ErrorHandler {
 
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFoundException(UserNotFoundException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND); // 404 Not Found
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserNotFoundException(UserNotFoundException exc, WebRequest request) {
+        return ErrorResponse.builder(exc, HttpStatus.NOT_FOUND, "The specified user was not found")
+                .build();
     }
 
     @ExceptionHandler(DuplicateUserException.class)
-    public ResponseEntity<String> handleDuplicateUserException(DuplicateUserException ex, WebRequest request) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT); // 409 Conflict
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleDuplicateUserException(DuplicateUserException exc, WebRequest request) {
+        return ErrorResponse.builder(exc, HttpStatus.CONFLICT, "This user already exists")
+                .build();
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
-        return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED); // 401 Unauthorized
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleBadCredentialsException(BadCredentialsException exc, WebRequest request) {
+        return ErrorResponse.builder(exc, HttpStatus.UNAUTHORIZED, "Invalid credentials")
+                .build();
     }
 }

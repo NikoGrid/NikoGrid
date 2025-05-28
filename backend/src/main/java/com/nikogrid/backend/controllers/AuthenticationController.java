@@ -9,10 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -24,18 +21,19 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<RecoveryJwtTokenDTO> authenticateUser(@Valid @RequestBody AuthenticationDTO authenticationDTO) {
         RecoveryJwtTokenDTO token = authenticationService.authenticateUser(authenticationDTO);
         return new ResponseEntity<>(token, HttpStatus.OK);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> registerUser(@Valid @RequestBody RegisterDTO registerDTO) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public void registerUser(@Valid @RequestBody RegisterDTO registerDTO) {
         try{
             authenticationService.registerUser(registerDTO);
-            return new ResponseEntity<>(HttpStatus.CREATED);
         }catch (DuplicateUserException e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            throw new DuplicateUserException("User already exists");
         }
     }
 
