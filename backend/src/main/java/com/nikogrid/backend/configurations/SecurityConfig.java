@@ -36,7 +36,18 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/locations/{id}").permitAll()
                         .requestMatchers("/api/v1/locations/nearby").permitAll()
                         .requestMatchers("/api/v1/locations/closest").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                // For deployment
+                                "/api/docs/v3/**",
+                                "/api/swagger-ui/**",
+                                "/api/swagger-ui.html",
+                                // Health probes
+                                "/actuator/health/liveness",
+                                "/actuator/health/readiness"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(AbstractHttpConfigurer::disable)
