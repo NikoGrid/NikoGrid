@@ -11,6 +11,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 COPY . .
+ARG VITE_BACKEND_BASE_URL=/
 RUN pnpm run build
 
 FROM nginx:1.27-alpine-slim
