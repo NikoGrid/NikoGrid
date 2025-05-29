@@ -16,5 +16,5 @@ export const Route = createFileRoute("/station/$stationId/")({
 });
 
 function RouteComponent() {
-  return <div>Hello "/book/$stationId/"!</div>;
+  return <div></div>;
 }

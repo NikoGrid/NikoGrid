@@ -1,5 +1,6 @@
 import { $api } from "@/api/client";
 import type { InterestPoint } from "@/api/schemas";
+import { cn } from "@/lib/utils";
 import { divIcon } from "leaflet";
 import { Zap } from "lucide-react";
 import {
@@ -47,8 +48,6 @@ interface StationsProps {
   setId: Dispatch<SetStateAction<number | null>>;
 }
 
-const iconSize = 40 as const;
-
 export default function Stations({ setId }: StationsProps) {
   const map = useMap();
 
@@ -77,76 +76,104 @@ export default function Stations({ setId }: StationsProps) {
   const debouncedGetLocations = useDebouncedCallback(getLocations, 300);
 
   useMapEvent("move", debouncedGetLocations);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(getLocations, []);
 
   return (
     <>
       {ips.map((ip, idx) => {
+        let id: string;
         switch (ip.t) {
           case "C":
+            id = `c-${idx}`;
             return (
-              <Marker
-                key={`c-${idx}`}
-                position={{ lat: ip.lat, lng: ip.lon }}
-                eventHandlers={{
-                  click: () => {
-                    map.flyTo({ lat: ip.lat, lng: ip.lon }, map.getZoom() + 2);
-                    getLocations();
-                  },
+              <StationMarker
+                key={id}
+                interestPoint={ip}
+                dataTestId={id}
+                handleClick={() => {
+                  map.flyTo({ lat: ip.lat, lng: ip.lon }, map.getZoom() + 2);
+                  getLocations();
                 }}
-                icon={divIcon({
-                  html: ReactDOMServer.renderToString(
-                    <div
-                      className="h-10 w-10 rounded-full bg-white p-2 outline-3 outline-fuchsia-700"
-                      data-test-id={`c-${idx}`}
-                      data-test-group="cluster"
-                    >
-                      <Zap className="h-6 w-6 fill-fuchsia-700 text-fuchsia-700" />
-                    </div>,
-                  ),
-                  className: "bg-none",
-                  iconAnchor: [iconSize / 2, iconSize / 2],
-                  tooltipAnchor: [0, iconSize / 2],
-                })}
-              >
-                <Tooltip permanent direction="bottom">
-                  <p>{ip.numPoints} Stations</p>
-                </Tooltip>
-              </Marker>
+              />
             );
           case "L":
+            id = `l-${idx}`;
             return (
-              <Marker
-                key={`l-${ip.id}`}
-                position={{ lat: ip.lat, lng: ip.lon }}
-                eventHandlers={{
-                  click: () => {
-                    setId(ip.id);
-                  },
+              <StationMarker
+                key={id}
+                interestPoint={ip}
+                dataTestId={id}
+                handleClick={() => {
+                  setId(ip.id);
                 }}
-                icon={divIcon({
-                  html: ReactDOMServer.renderToString(
-                    <div
-                      className="h-10 w-10 rounded-full bg-white p-2 outline-3 outline-teal-700"
-                      data-test-id={`l-${ip.id}`}
-                      data-test-group="location"
-                      data-test-name={ip.n}
-                    >
-                      <Zap className="h-6 w-6 fill-teal-700 text-teal-700" />
-                    </div>,
-                  ),
-                  className: "bg-none",
-                  iconAnchor: [iconSize / 2, iconSize / 2],
-                  tooltipAnchor: [0, iconSize / 2],
-                })}
-              >
-                <Tooltip direction="bottom">
-                  <p>{ip.n}</p>
-                </Tooltip>
-              </Marker>
+              />
             );
         }
       })}
     </>
+  );
+}
+
+interface StationMarkerProps {
+  interestPoint: InterestPoint;
+  handleClick(): void;
+  dataTestId?: string;
+}
+
+const iconSize = 40 as const;
+
+function StationMarker({
+  interestPoint,
+  handleClick,
+  dataTestId,
+}: StationMarkerProps) {
+  const { fillColor, textColor, outlineColor } =
+    interestPoint.t === "C"
+      ? {
+          fillColor: "fill-fuchsia-700",
+          textColor: "text-fuchsia-700",
+          outlineColor: "outline-fuchsia-700",
+        }
+      : {
+          fillColor: "fill-teal-700",
+          textColor: "text-teal-700",
+          outlineColor: "outline-teal-700",
+        };
+  return (
+    <Marker
+      position={{ lat: interestPoint.lat, lng: interestPoint.lon }}
+      eventHandlers={{
+        click: handleClick,
+      }}
+      icon={divIcon({
+        html: ReactDOMServer.renderToString(
+          <div
+            className={cn(
+              "h-10 w-10 rounded-full bg-white p-2 outline-3",
+              outlineColor,
+            )}
+            data-test-id={dataTestId}
+            data-test-group={interestPoint.t === "C" ? "cluster" : "location"}
+            data-test-name={
+              interestPoint.t === "L" ? interestPoint.n : undefined
+            }
+          >
+            <Zap className={cn("h-6 w-6", textColor, fillColor)} />
+          </div>,
+        ),
+        className: "bg-none",
+        iconAnchor: [iconSize / 2, iconSize / 2],
+        tooltipAnchor: [0, iconSize / 2],
+      })}
+    >
+      <Tooltip permanent={interestPoint.t === "C"} direction="bottom">
+        <p>
+          {interestPoint.t === "L"
+            ? interestPoint.n
+            : `${interestPoint.numPoints} Stations`}
+        </p>
+      </Tooltip>
+    </Marker>
   );
 }

@@ -14,7 +14,7 @@ export default function NavBar() {
 }
 
 function Auth() {
-  return <p>Auth Placeholder</p>;
+  return <p></p>;
 }
 
 function Logo() {
