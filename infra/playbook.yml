@@ -1,0 +1,139 @@
+- name: Setup venv
+  tags:
+    - venv
+  hosts: k3s_cluster
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    - name: install pip
+      ansible.builtin.apt:
+        name:
+          - python3-pip
+          - python3-venv
+
+    - name: create venv
+      ansible.builtin.pip:
+        name: kubernetes
+        virtualenv: /root/.ansible-venv
+        virtualenv_command: /usr/bin/python3 -m venv
+
+- name: Setup cluster
+  tags:
+    - k8s
+  hosts: k3s_cluster
+  become: true
+  tasks:
+    - name: Import k3s server role
+      ansible.builtin.import_role:
+        name: k3s.orchestration.k3s_server
+
+- name: Install ArgoCD
+  tags:
+    - k8s
+    - argocd
+  hosts: k3s_cluster
+  tasks:
+    - name: Create argocd namespace
+      kubernetes.core.k8s:
+        name: argocd
+        api_version: v1
+        kind: Namespace
+
+    - name: Download argocd manifest to the cluster.
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        dest: ~/argocd-install.yaml
+        mode: "0664"
+
+    - name: Apply argocd manifest to the cluster.
+      kubernetes.core.k8s:
+        apply: true
+        namespace: argocd
+        src: ~/argocd-install.yaml
+
+    - name: Copy argocd config to host
+      ansible.builtin.copy:
+        src: argocd/argocd-config.yml
+        dest: ~/argocd-config.yml
+
+    - name: Apply argocd config
+      kubernetes.core.k8s:
+        apply: true
+        namespace: argocd
+        src: ~/argocd-config.yml
+
+    - name: Copy rbac argocd config to host
+      ansible.builtin.copy:
+        src: argocd/argocd-rbac-config.yml
+        dest: ~/argocd-rbac-config.yml
+
+    - name: Apply rbac argocd config
+      kubernetes.core.k8s:
+        apply: true
+        namespace: argocd
+        src: ~/argocd-rbac-config.yml
+
+- name: Install CloudNativePG
+  tags:
+    - k8s
+    - cnpg
+  hosts: k3s_cluster
+  tasks:
+    - name: Create namespace
+      kubernetes.core.k8s:
+        name: cnpg-system
+        api_version: v1
+        kind: Namespace
+
+    - name: Download CloudNativePG manifest to the cluster.
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.26/releases/cnpg-1.26.0.yaml
+        dest: ~/cloud-native-pg-install.yaml
+        mode: "0664"
+
+    - name: Apply cloud native pg manifest to the cluster.
+      kubernetes.core.k8s:
+        namespace: argocd
+        src: ~/cloud-native-pg-install.yaml
+        apply: true
+        server_side_apply:
+          field_manager: ansible
+
+- name: Install Cert Manager
+  tags:
+    - k8s
+    - cert-manager
+  hosts: k3s_cluster
+  tasks:
+    - name: Create namespace
+      kubernetes.core.k8s:
+        name: cert-manager
+        api_version: v1
+        kind: Namespace
+
+    - name: Download cert manager manifest to the cluster.
+      ansible.builtin.get_url:
+        url: https://github.com/cert-manager/cert-manager/releases/download/v1.17.2/cert-manager.yaml
+        dest: ~/cert-manager-install.yaml
+        mode: "0664"
+
+    - name: Apply cert manager manifest to the cluster.
+      kubernetes.core.k8s:
+        namespace: cert-manager
+        src: ~/cert-manager-install.yaml
+        apply: true
+        server_side_apply:
+          field_manager: ansible
+
+    - name: Copy issuer config to host
+      ansible.builtin.copy:
+        src: cert-manager/issuer.yml
+        dest: ~/issuer.yml
+
+    - name: Install issuer.
+      kubernetes.core.k8s:
+        src: ~/issuer.yml
+        apply: true
+        server_side_apply:
+          field_manager: ansible
