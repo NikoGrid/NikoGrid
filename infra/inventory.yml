@@ -1,0 +1,14 @@
+k3s_cluster:
+  children:
+    server:
+      hosts:
+        deti-tqs-24.ua.pt:
+
+  # Required Vars
+  vars:
+    ansible_port: 22
+    ansible_user: jcapucho
+    k3s_version: v1.33.1+k3s1
+    api_endpoint: "{{ hostvars[groups['server'][0]]['ansible_host'] | default(groups['server'][0]) }}"
+
+    extra_server_args: "--tls-san deti-tqs-24.ua.pt"
