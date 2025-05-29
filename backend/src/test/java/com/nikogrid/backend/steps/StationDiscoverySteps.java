@@ -1,6 +1,5 @@
 package com.nikogrid.backend.steps;
 
-import com.nikogrid.backend.TestcontainersConfiguration;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.repositories.LocationRepository;
 import io.cucumber.java.After;
@@ -18,7 +17,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.Duration;
 import java.util.List;
@@ -28,12 +27,14 @@ import java.util.Objects;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-@Import(TestcontainersConfiguration.class)
 public class StationDiscoverySteps {
 
     private static WebDriver driver;
 
     private final LocationRepository locationRepository;
+
+    @Value("${frontend.base-url}")
+    private String baseUrl;
 
     @Autowired
     public StationDiscoverySteps(LocationRepository locationRepository) {
@@ -94,7 +95,7 @@ public class StationDiscoverySteps {
 
     @When("I open the application")
     public void iOpenTheApplication() {
-        driver.get("http://localhost:5173/");
+        driver.get(baseUrl);
     }
 
     @And("I browse for stations at {float}, {float}")
@@ -102,9 +103,10 @@ public class StationDiscoverySteps {
         var zoomIn = driver.findElement(By.className("leaflet-control-zoom-out"));
         var pane = driver.findElement(By.className("leaflet-pane"));
         var wait = new WebDriverWait(driver, Duration.ofMillis(500));
-        for (var i = 0; i < 4; i++) {
+        for (var i = 0; i < 18; i++) {
             zoomIn.click();
             wait.until(d -> !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim"));
+            if (waitFindByTestGroup("location").size() != 1) break;
         }
     }
 
