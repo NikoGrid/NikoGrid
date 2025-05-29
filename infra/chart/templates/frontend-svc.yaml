@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nikogrid.fullname" . }}-frontend-svc
+  labels:
+    {{- include "nikogrid.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      appProtocol: http
+      port: 80
+      targetPort: http
+  selector:
+    {{- include "nikogrid.frontend.selectorLabels" . | nindent 4 }}
