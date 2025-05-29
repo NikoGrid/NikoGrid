@@ -23,6 +23,6 @@ ALTER TABLE chargers
 
 CREATE INDEX locations_geom_idx
     ON locations
-    USING GIST (geom);
+        USING GIST (geom);
 
-CREATE INDEX chargers_location_id_idx ON chargers(location_id);
+CREATE INDEX chargers_location_id_idx ON chargers (location_id);
