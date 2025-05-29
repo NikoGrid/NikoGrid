@@ -26,6 +26,8 @@
           pkgs.tailwindcss-language-server
 
           pkgs.ansible
+          pkgs.argocd
+          pkgs.kubernetes-helm
         ];
       };
     });

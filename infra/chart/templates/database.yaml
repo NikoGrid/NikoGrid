@@ -1,0 +1,11 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: {{ include "nikogrid.fullname" . }}-db
+spec:
+  name: app
+  owner: app
+  cluster:
+    name: {{ include "nikogrid.fullname" . }}-cluster
+  extensions:
+    - name: postgis
