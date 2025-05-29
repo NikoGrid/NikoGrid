@@ -1,0 +1,10 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "nikogrid.fullname" . }}-cluster
+spec:
+  instances: {{ .Values.database.replicaCount }}
+  imageName: "{{ .Values.database.image.repository }}:{{ .Values.database.image.tag }}"
+
+  storage:
+    size: {{ .Values.database.storageSize }}
