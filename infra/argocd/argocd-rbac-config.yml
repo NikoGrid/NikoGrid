@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+data:
+  policy.csv: |
+    p, github, projects, get, *, allow
+    p, github, applications, get, *, allow
+    p, github, applications, sync, *, allow
+    p, github, applications, action/apps/Deployment/restart, *, allow

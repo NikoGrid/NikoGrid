@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-runner
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/actions/actions-runner-controller-charts
+    chart: gha-runner-scale-set
+    targetRevision: 0.11.0
+    helm:
+      releaseName: deti-tqs-24
+      parameters:
+        - name: "githubConfigUrl"
+          value: "https://github.com/NikoGrid/NikoGrid"
+        - name: "githubConfigSecret"
+          value: "arc-github-secret"
+        - name: "controllerServiceAccount.namespace"
+          value: "arc"
+        - name: "controllerServiceAccount.name"
+          value: "arc-gha-rs-controller"
+        - name: "containerMode.type"
+          value: "dind"
+        - name: "maxRunners"
+          value: "1"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
