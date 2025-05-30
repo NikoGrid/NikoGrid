@@ -11,6 +11,9 @@ on:
     paths:
       - "frontend/**/*"
       - ".github/workflows/frontend.yml"
+  merge_group:
+    types: [checks_requested]
+
 jobs:
   build:
     name: Lint and build
