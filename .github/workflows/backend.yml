@@ -11,6 +11,9 @@ on:
     paths:
       - "backend/**/*"
       - ".github/workflows/backend.yml"
+  merge_group:
+    types: [checks_requested]
+
 jobs:
   build:
     name: Build and analyze

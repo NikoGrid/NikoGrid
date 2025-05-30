@@ -13,7 +13,6 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,20 +25,18 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class StationDiscoverySteps {
 
-    private static WebDriver driver;
+    private WebDriver driver;
 
-    private final LocationRepository locationRepository;
+    @Autowired
+    private LocationRepository locationRepository;
 
     @Value("${frontend.base-url}")
     private String baseUrl;
 
-    @Autowired
-    public StationDiscoverySteps(LocationRepository locationRepository) {
-        this.locationRepository = locationRepository;
-    }
+    @Value("${selenium.docker:false}")
+    private boolean useDocker;
 
     private WebElement waitFindByTestId(String testId, int duration) {
         var selector = By.cssSelector(String.format("[data-test-id='%s']", testId));
@@ -65,19 +62,23 @@ public class StationDiscoverySteps {
 
     @Before
     public void setUpWebDriver() {
-        if (driver == null) {
-            WebDriverManager.firefoxdriver().setup();
+        if (this.driver == null) {
             var opts = new FirefoxOptions();
             opts.addPreference("geo.enabled", false);
-            driver = new FirefoxDriver(opts);
+            WebDriverManager wdm = WebDriverManager.firefoxdriver();
+
+            if (this.useDocker)
+                wdm = wdm.browserInDocker();
+
+            this.driver = wdm.capabilities(opts).timeout(120).create();
         }
     }
 
     @After
     public void tearDownWebDriver() {
-        if (driver != null) {
-            driver.quit();
-            driver = null;
+        if (this.driver != null) {
+            this.driver.quit();
+            this.driver = null;
         }
         locationRepository.deleteAll();
     }
