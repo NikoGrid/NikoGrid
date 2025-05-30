@@ -49,9 +49,8 @@ jobs:
         run: |
           mkdir -p test-reports/
 
-          # Run unit tests first and extract the xray report
+          # Run unit tests first
           mvn -B clean test
-          cp target/TEST-junit-jupiter.xml test-reports/unit-tests.xml
 
           # Run integration tests
           mvn -B pre-integration-test integration-test post-integration-test \
