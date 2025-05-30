@@ -8,19 +8,39 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as AuthImport } from './routes/_auth'
 import { Route as IndexImport } from './routes/index'
 import { Route as StationStationIdIndexImport } from './routes/station/$stationId/index'
 
+// Create Virtual Routes
+
+const AuthRegisterIndexLazyImport = createFileRoute('/_auth/register/')()
+
 // Create/Update Routes
+
+const AuthRoute = AuthImport.update({
+  id: '/_auth',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
 } as any)
+
+const AuthRegisterIndexLazyRoute = AuthRegisterIndexLazyImport.update({
+  id: '/register/',
+  path: '/register/',
+  getParentRoute: () => AuthRoute,
+} as any).lazy(() =>
+  import('./routes/_auth/register/index.lazy').then((d) => d.Route),
+)
 
 const StationStationIdIndexRoute = StationStationIdIndexImport.update({
   id: '/station/$stationId/',
@@ -39,6 +59,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
+    '/_auth': {
+      id: '/_auth'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
     '/station/$stationId/': {
       id: '/station/$stationId/'
       path: '/station/$stationId'
@@ -46,43 +73,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StationStationIdIndexImport
       parentRoute: typeof rootRoute
     }
+    '/_auth/register/': {
+      id: '/_auth/register/'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof AuthRegisterIndexLazyImport
+      parentRoute: typeof AuthImport
+    }
   }
 }
 
 // Create and export the route tree
 
+interface AuthRouteChildren {
+  AuthRegisterIndexLazyRoute: typeof AuthRegisterIndexLazyRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthRegisterIndexLazyRoute: AuthRegisterIndexLazyRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '': typeof AuthRouteWithChildren
   '/station/$stationId': typeof StationStationIdIndexRoute
+  '/register': typeof AuthRegisterIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '': typeof AuthRouteWithChildren
   '/station/$stationId': typeof StationStationIdIndexRoute
+  '/register': typeof AuthRegisterIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/_auth': typeof AuthRouteWithChildren
   '/station/$stationId/': typeof StationStationIdIndexRoute
+  '/_auth/register/': typeof AuthRegisterIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/station/$stationId'
+  fullPaths: '/' | '' | '/station/$stationId' | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/station/$stationId'
-  id: '__root__' | '/' | '/station/$stationId/'
+  to: '/' | '' | '/station/$stationId' | '/register'
+  id: '__root__' | '/' | '/_auth' | '/station/$stationId/' | '/_auth/register/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
   StationStationIdIndexRoute: typeof StationStationIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
   StationStationIdIndexRoute: StationStationIdIndexRoute,
 }
 
@@ -97,14 +149,25 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/_auth",
         "/station/$stationId/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
+    "/_auth": {
+      "filePath": "_auth.tsx",
+      "children": [
+        "/_auth/register/"
+      ]
+    },
     "/station/$stationId/": {
       "filePath": "station/$stationId/index.tsx"
+    },
+    "/_auth/register/": {
+      "filePath": "_auth/register/index.lazy.tsx",
+      "parent": "/_auth"
     }
   }
 }
