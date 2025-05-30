@@ -20,6 +20,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/auth/register": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["registerUser"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/auth/login": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["authenticateUser"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/locations/{id}": {
     parameters: {
       query?: never;
@@ -68,225 +100,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/auth/logout": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get: operations["logout"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
-    ContentDisposition: {
-      type?: string;
-      name?: string;
-      filename?: string;
-      charset?: string;
-      /**
-       * Format: int64
-       * @deprecated
-       */
-      size?: number;
-      /**
-       * Format: date-time
-       * @deprecated
-       */
-      creationDate?: string;
-      /**
-       * Format: date-time
-       * @deprecated
-       */
-      modificationDate?: string;
-      /**
-       * Format: date-time
-       * @deprecated
-       */
-      readDate?: string;
-      attachment?: boolean;
-      formData?: boolean;
-      inline?: boolean;
-    };
-    DefaultHttpStatusCode: components["schemas"]["HttpStatusCode"];
-    ErrorResponse: {
-      body?: components["schemas"]["ProblemDetail"];
-      statusCode?:
-        | components["schemas"]["DefaultHttpStatusCode"]
-        | components["schemas"]["HttpStatus"];
-      detailMessageArguments?: unknown[];
-      typeMessageCode?: string;
-      detailMessageCode?: string;
-      titleMessageCode?: string;
-      headers?: {
-        contentDisposition?: components["schemas"]["ContentDisposition"];
-        acceptCharset?: string[];
-        /** Format: uri */
-        location?: string;
-        range?: components["schemas"]["HttpRange"][];
-        allow?: components["schemas"]["HttpMethod"][];
-        host?: {
-          hostString?: string;
-          address?: {
-            hostAddress?: string;
-            /** Format: byte */
-            address?: string;
-            hostName?: string;
-            linkLocalAddress?: boolean;
-            multicastAddress?: boolean;
-            anyLocalAddress?: boolean;
-            loopbackAddress?: boolean;
-            siteLocalAddress?: boolean;
-            mcglobal?: boolean;
-            mcnodeLocal?: boolean;
-            mclinkLocal?: boolean;
-            mcsiteLocal?: boolean;
-            mcorgLocal?: boolean;
-            canonicalHostName?: string;
-          };
-          /** Format: int32 */
-          port?: number;
-          unresolved?: boolean;
-          hostName?: string;
-        };
-        cacheControl?: string;
-        contentLanguage?: string;
-        etag?: string;
-        connection?: string[];
-        accept?: components["schemas"]["MediaType"][];
-        acceptPatch?: components["schemas"]["MediaType"][];
-        accessControlAllowOrigin?: string;
-        accessControlAllowMethods?: components["schemas"]["HttpMethod"][];
-        accessControlAllowHeaders?: string[];
-        accessControlExposeHeaders?: string[];
-        accessControlAllowCredentials?: boolean;
-        /** Format: int64 */
-        accessControlMaxAge?: number;
-        accessControlRequestMethod?: components["schemas"]["HttpMethod"];
-        accessControlRequestHeaders?: string[];
-        acceptLanguage?: {
-          range?: string;
-          /** Format: double */
-          weight?: number;
-        }[];
-        basicAuth?: string;
-        acceptLanguageAsLocales?: string[];
-        bearerAuth?: string;
-        /** Format: int64 */
-        expires?: number;
-        ifMatch?: string[];
-        ifNoneMatch?: string[];
-        /** Format: int64 */
-        ifUnmodifiedSince?: number;
-        origin?: string;
-        pragma?: string;
-        upgrade?: string;
-        vary?: string[];
-        empty?: boolean;
-        all?: {
-          [key: string]: string;
-        };
-        /** Format: int64 */
-        lastModified?: number;
-        /** Format: int64 */
-        date?: number;
-        /** Format: int64 */
-        contentLength?: number;
-        /** Format: int64 */
-        ifModifiedSince?: number;
-        contentType?: components["schemas"]["MediaType"];
-      } & {
-        [key: string]: string[];
-      };
-    };
-    HttpMethod: unknown;
-    HttpRange: unknown;
-    /** @enum {unknown} */
-    HttpStatus:
-      | "100 CONTINUE"
-      | "101 SWITCHING_PROTOCOLS"
-      | "102 PROCESSING"
-      | "103 EARLY_HINTS"
-      | "103 CHECKPOINT"
-      | "200 OK"
-      | "201 CREATED"
-      | "202 ACCEPTED"
-      | "203 NON_AUTHORITATIVE_INFORMATION"
-      | "204 NO_CONTENT"
-      | "205 RESET_CONTENT"
-      | "206 PARTIAL_CONTENT"
-      | "207 MULTI_STATUS"
-      | "208 ALREADY_REPORTED"
-      | "226 IM_USED"
-      | "300 MULTIPLE_CHOICES"
-      | "301 MOVED_PERMANENTLY"
-      | "302 FOUND"
-      | "302 MOVED_TEMPORARILY"
-      | "303 SEE_OTHER"
-      | "304 NOT_MODIFIED"
-      | "305 USE_PROXY"
-      | "307 TEMPORARY_REDIRECT"
-      | "308 PERMANENT_REDIRECT"
-      | "400 BAD_REQUEST"
-      | "401 UNAUTHORIZED"
-      | "402 PAYMENT_REQUIRED"
-      | "403 FORBIDDEN"
-      | "404 NOT_FOUND"
-      | "405 METHOD_NOT_ALLOWED"
-      | "406 NOT_ACCEPTABLE"
-      | "407 PROXY_AUTHENTICATION_REQUIRED"
-      | "408 REQUEST_TIMEOUT"
-      | "409 CONFLICT"
-      | "410 GONE"
-      | "411 LENGTH_REQUIRED"
-      | "412 PRECONDITION_FAILED"
-      | "413 PAYLOAD_TOO_LARGE"
-      | "413 REQUEST_ENTITY_TOO_LARGE"
-      | "414 URI_TOO_LONG"
-      | "414 REQUEST_URI_TOO_LONG"
-      | "415 UNSUPPORTED_MEDIA_TYPE"
-      | "416 REQUESTED_RANGE_NOT_SATISFIABLE"
-      | "417 EXPECTATION_FAILED"
-      | "418 I_AM_A_TEAPOT"
-      | "419 INSUFFICIENT_SPACE_ON_RESOURCE"
-      | "420 METHOD_FAILURE"
-      | "421 DESTINATION_LOCKED"
-      | "422 UNPROCESSABLE_ENTITY"
-      | "423 LOCKED"
-      | "424 FAILED_DEPENDENCY"
-      | "425 TOO_EARLY"
-      | "426 UPGRADE_REQUIRED"
-      | "428 PRECONDITION_REQUIRED"
-      | "429 TOO_MANY_REQUESTS"
-      | "431 REQUEST_HEADER_FIELDS_TOO_LARGE"
-      | "451 UNAVAILABLE_FOR_LEGAL_REASONS"
-      | "500 INTERNAL_SERVER_ERROR"
-      | "501 NOT_IMPLEMENTED"
-      | "502 BAD_GATEWAY"
-      | "503 SERVICE_UNAVAILABLE"
-      | "504 GATEWAY_TIMEOUT"
-      | "505 HTTP_VERSION_NOT_SUPPORTED"
-      | "506 VARIANT_ALSO_NEGOTIATES"
-      | "507 INSUFFICIENT_STORAGE"
-      | "508 LOOP_DETECTED"
-      | "509 BANDWIDTH_LIMIT_EXCEEDED"
-      | "510 NOT_EXTENDED"
-      | "511 NETWORK_AUTHENTICATION_REQUIRED";
-    HttpStatusCode: {
-      is4xxClientError?: boolean;
-      is5xxServerError?: boolean;
-      is1xxInformational?: boolean;
-      is2xxSuccessful?: boolean;
-      is3xxRedirection?: boolean;
-      error?: boolean;
-    };
-    MediaType: {
-      type?: string;
-      subtype?: string;
-      parameters?: {
-        [key: string]: string;
-      };
-      /** Format: double */
-      qualityValue?: number;
-      wildcardType?: boolean;
-      wildcardSubtype?: boolean;
-      subtypeSuffix?: string;
-      concrete?: boolean;
-      charset?: string;
-    };
     ProblemDetail: {
       /** Format: uri */
       type?: string;
@@ -315,6 +148,17 @@ export interface components {
       lat: number;
       /** Format: float */
       lon: number;
+    };
+    RegisterDTO: {
+      email: string;
+      password: string;
+    };
+    AuthResponse: {
+      message: string;
+    };
+    LoginDTO: {
+      email: string;
+      password: string;
     };
     ClusterInterestPoint: Omit<
       WithRequired<
@@ -380,6 +224,108 @@ export interface operations {
           "application/json": components["schemas"]["LocationDTO"];
         };
       };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+    };
+  };
+  registerUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RegisterDTO"];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+    };
+  };
+  authenticateUser: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["LoginDTO"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
     };
   };
   getLocationById: {
@@ -402,13 +348,31 @@ export interface operations {
           "application/json": components["schemas"]["LocationDTO"];
         };
       };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "*/*": components["schemas"]["ErrorResponse"];
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
         };
       };
     };
@@ -440,6 +404,24 @@ export interface operations {
           )[];
         };
       };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
     };
   };
   getClosestAvailableLocation: {
@@ -463,13 +445,69 @@ export interface operations {
           "application/json": components["schemas"]["LocationDTO"];
         };
       };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
       /** @description Not Found */
       404: {
         headers: {
           [name: string]: unknown;
         };
         content: {
-          "*/*": components["schemas"]["ErrorResponse"];
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+    };
+  };
+  logout: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "*/*": components["schemas"]["AuthResponse"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
         };
       };
     };

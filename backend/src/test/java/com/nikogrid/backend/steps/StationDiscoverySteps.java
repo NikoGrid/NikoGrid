@@ -146,4 +146,36 @@ public class StationDiscoverySteps {
                 .map(i -> Objects.requireNonNull(i.getAttribute("data-test-name")))
                 .containsExactlyInAnyOrder(ids);
     }
+
+
+    @And("navigate to the register page")
+    public void navigateToTheRegisterPage() {
+        final var registerLink = waitFindByTestId("register-link");
+        registerLink.click();
+    }
+
+    @Then("I see a register form")
+    public void iSeeARegisterForm() {
+        waitFindByTestId("register-form");
+    }
+
+    @And("when I input the email {string} and password {string}")
+    public void whenIInputTheEmailAndPassword(String email, String password) {
+        final var emailInput = waitFindByTestId("register-email");
+        final var passwordInput = waitFindByTestId("register-password");
+        final var confirmPasswordInput = waitFindByTestId("register-confirm-password");
+
+        final var submitButton = waitFindByTestId("register-submit-button");
+
+        emailInput.sendKeys(email);
+        passwordInput.sendKeys(password);
+        confirmPasswordInput.sendKeys(password);
+
+        submitButton.click();
+    }
+
+    @Then("I get redirected to the login page")
+    public void iGetRedirectedToTheLoginPage() {
+        waitFindByTestId("login-page");
+    }
 }

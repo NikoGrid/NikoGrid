@@ -1,4 +1,5 @@
 import NavBar from "@/components/navbar";
+import { Toaster } from "@/components/ui/sonner";
 import Devtools from "@/utils/devtools";
 import { HeadContent, Outlet, createRootRoute } from "@tanstack/react-router";
 
@@ -25,6 +26,7 @@ function RootComponent() {
         <NavBar />
         <Outlet />
       </div>
+      <Toaster richColors />
       <Devtools />
     </>
   );

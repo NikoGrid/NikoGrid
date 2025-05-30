@@ -1,4 +1,7 @@
+import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import type { ComponentProps } from "react";
+import { buttonVariants } from "./ui/button";
 
 export default function NavBar() {
   return (
@@ -8,13 +11,23 @@ export default function NavBar() {
           <Logo />
         </Link>
       </nav>
-      <Auth />
+      <NoAuth />
     </header>
   );
 }
 
-function Auth() {
-  return <p></p>;
+function NoAuth({ className, ...props }: ComponentProps<"section">) {
+  return (
+    <section className={cn("", className)} {...props}>
+      <Link
+        data-test-id="register-link"
+        to="/register"
+        className={buttonVariants()}
+      >
+        Register
+      </Link>
+    </section>
+  );
 }
 
 function Logo() {
