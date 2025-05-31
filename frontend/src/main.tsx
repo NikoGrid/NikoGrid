@@ -6,6 +6,7 @@ import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
+import { refreshUser } from "./store/user";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,8 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
+
+refreshUser();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -2,8 +2,10 @@ package com.nikogrid.backend.steps;
 
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
+import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
+import com.nikogrid.backend.repositories.UserRepository;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.DataTableType;
@@ -19,6 +21,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Duration;
 import java.util.List;
@@ -38,12 +41,19 @@ public class StationDiscoverySteps {
     @Autowired
     private ChargerRepository chargerRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Value("${frontend.base-url}")
     private String baseUrl;
 
 
     @Value("${selenium.docker:false}")
     private boolean useDocker;
+
     private WebElement waitFindByTestId(String testId, int duration) {
         var selector = By.cssSelector(String.format("[data-test-id='%s']", testId));
         var wait = new WebDriverWait(driver, Duration.ofSeconds(duration));
@@ -78,6 +88,8 @@ public class StationDiscoverySteps {
 
             this.driver = wdm.capabilities(opts).timeout(120).create();
         }
+        locationRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @After
@@ -158,8 +170,8 @@ public class StationDiscoverySteps {
         var wait = new WebDriverWait(driver, Duration.ofHours(2));
         var pane = driver.findElement(By.className("leaflet-map-pane"));
         wait.until(d -> !d.findElement(By.cssSelector("[data-test-id='location-loading']")).isDisplayed()
-            && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim")
-            && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim")
+                && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim")
+                && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim")
         );
     }
 
@@ -214,5 +226,41 @@ public class StationDiscoverySteps {
     @Then("I get redirected to the login page")
     public void iGetRedirectedToTheLoginPage() {
         waitFindByTestId("login-page");
+    }
+
+    @Given("I have the account with email {string} and password {string}")
+    public void iHaveTheAccountWithEmailAndPassword(String email, String password) {
+        final var user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+
+        userRepository.save(user);
+    }
+
+    @And("navigate to the login page")
+    public void navigateToTheLoginPage() {
+        final var loginLink = waitFindByTestId("login-link");
+        loginLink.click();
+    }
+
+    @Then("I see a login form")
+    public void iSeeALoginForm() {
+        waitFindByTestId("login-form");
+    }
+
+    @And("when I login with the email {string} and password {string}")
+    public void whenILoginWithTheEmailAndPassword(String email, String password) {
+        final var emailInput = waitFindByTestId("login-email");
+        final var passwordInput = waitFindByTestId("login-password");
+        final var submitButton = waitFindByTestId("login-submit-button");
+
+        emailInput.sendKeys(email);
+        passwordInput.sendKeys(password);
+        submitButton.click();
+    }
+
+    @Then("I get redirected to the home page")
+    public void iGetRedirectedToTheHomePage() {
+        waitFindByTestId("home-page");
     }
 }

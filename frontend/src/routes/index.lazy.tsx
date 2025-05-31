@@ -2,31 +2,39 @@ import MapSearch from "@/components/map-search";
 import StationDetails from "@/components/station-details";
 import Stations from "@/components/stations";
 import { useCurrentPosition } from "@/hooks/use-current-position";
-import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState, type ComponentRef } from "react";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState, type ComponentRef } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 
-export const Route = createFileRoute("/")({
+export const Route = createLazyFileRoute("/")({
   component: RouteComponent,
 });
 
+const defaultCoords = {
+  lat: 40.44686847220579,
+  lng: -8.396856383968853,
+};
+
 function RouteComponent() {
-  const { location, locationAvailable } = useCurrentPosition();
+  const { location } = useCurrentPosition();
   const [stationId, setStationId] = useState<number | null>(null);
   const [higlightedId, setHighlightedId] = useState<number | null>(null);
 
   const mapRef = useRef<ComponentRef<typeof MapContainer>>(null);
 
-  if (location === null && locationAvailable) return null;
+  useEffect(() => {
+    if (location === null) return;
+    mapRef.current?.setView({
+      lat: location.coords.latitude,
+      lng: location.coords.longitude,
+    });
+  }, [location]);
 
   return (
-    <main className="relative flex grow flex-col">
+    <main className="relative flex grow flex-col" data-test-id="home-page">
       <MapContainer
         ref={mapRef}
-        center={[
-          location?.coords.latitude ?? 0,
-          location?.coords.longitude ?? 0,
-        ]}
+        center={defaultCoords}
         zoom={13}
         scrollWheelZoom={true}
         className="relative z-0 grow"

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createLazyFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { LoaderCircle } from "lucide-react";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { toast } from "sonner";
@@ -165,14 +165,23 @@ export default function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button
-          disabled={isPending}
-          data-test-id="register-submit-button"
-          type="submit"
-        >
-          Register
-          {isPending && <LoaderCircle className="animate-spin" />}
-        </Button>
+        <div>
+          <Button
+            disabled={isPending}
+            data-test-id="register-submit-button"
+            type="submit"
+          >
+            Register
+            {isPending && <LoaderCircle className="animate-spin" />}
+          </Button>
+          <p className="text-sm">
+            Already have an account? Login{" "}
+            <Link to="/login" className="cursor-pointer underline">
+              here
+            </Link>
+            .
+          </p>
+        </div>
       </form>
     </Form>
   );
