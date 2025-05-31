@@ -90,7 +90,6 @@ public class AuthenticationController {
         cookie.setMaxAge(maxAge);
         cookie.setPath("/");
         cookie.setSecure(secureCookies || isSecure);
-        cookie.setHttpOnly(true);
         cookie.setAttribute("SameSite", SameSite.STRICT.toString());
         return cookie;
     }

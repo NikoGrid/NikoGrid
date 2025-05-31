@@ -9,6 +9,7 @@ if (backendBaseUrl === undefined)
 
 const fetchClient = createFetchClient<paths>({
   baseUrl: backendBaseUrl,
+  credentials: "include",
 });
 
 export const $api = createClient(fetchClient);
