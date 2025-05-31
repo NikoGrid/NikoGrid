@@ -41,6 +41,17 @@ public class StationDiscoverySteps {
         this.locationRepository = locationRepository;
     }
 
+    private WebElement waitFindByTestId(String testId, int duration) {
+        var selector = By.cssSelector(String.format("[data-test-id='%s']", testId));
+        var wait = new WebDriverWait(driver, Duration.ofSeconds(duration));
+        wait.until(d -> d.findElement(selector).isDisplayed());
+        return driver.findElement(selector);
+    }
+
+    private WebElement waitFindByTestId(String testId) {
+        return waitFindByTestId(testId, 5);
+    }
+
     private List<WebElement> waitFindByTestGroup(String testId, int duration) {
         var selector = By.cssSelector(String.format("[data-test-group='%s']", testId));
         var wait = new WebDriverWait(driver, Duration.ofSeconds(duration));
@@ -100,13 +111,25 @@ public class StationDiscoverySteps {
 
     @And("I browse for stations at {float}, {float}")
     public void iBrowseForStationsAt(float lat, float lon) {
-        var zoomIn = driver.findElement(By.className("leaflet-control-zoom-out"));
-        var pane = driver.findElement(By.className("leaflet-pane"));
+        var latInput = waitFindByTestId("lat-input");
+        var lonInput = waitFindByTestId("lon-input");
+        var coordsButton = waitFindByTestId("coords-button");
+
+        latInput.sendKeys(Float.toString(lat));
+        lonInput.sendKeys(Float.toString(lon));
+        coordsButton.click();
+
         var wait = new WebDriverWait(driver, Duration.ofMillis(500));
-        for (var i = 0; i < 18; i++) {
-            zoomIn.click();
+        var pane = driver.findElement(By.className("leaflet-map-pane"));
+        wait.until(d -> !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim"));
+
+        var selector = By.cssSelector("[data-test-group='location']");
+
+        var zoomOut = driver.findElement(By.className("leaflet-control-zoom-out"));
+        for (var i = 0; i < 8; i++) {
+            if (driver.findElements(selector).size() != 1) break;
+            zoomOut.click();
             wait.until(d -> !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim"));
-            if (waitFindByTestGroup("location").size() != 1) break;
         }
     }
 
