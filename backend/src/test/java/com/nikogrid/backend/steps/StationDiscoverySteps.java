@@ -1,6 +1,8 @@
 package com.nikogrid.backend.steps;
 
+import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
+import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -13,6 +15,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 public class StationDiscoverySteps {
 
     private WebDriver driver;
@@ -32,12 +36,15 @@ public class StationDiscoverySteps {
     @Autowired
     private LocationRepository locationRepository;
 
+    @Autowired
+    private ChargerRepository chargerRepository;
+
     @Value("${frontend.base-url}")
     private String baseUrl;
 
+
     @Value("${selenium.docker:false}")
     private boolean useDocker;
-
     private WebElement waitFindByTestId(String testId, int duration) {
         var selector = By.cssSelector(String.format("[data-test-id='%s']", testId));
         var wait = new WebDriverWait(driver, Duration.ofSeconds(duration));
@@ -80,6 +87,7 @@ public class StationDiscoverySteps {
             this.driver.quit();
             this.driver = null;
         }
+        chargerRepository.deleteAll();
         locationRepository.deleteAll();
     }
 
@@ -100,9 +108,18 @@ public class StationDiscoverySteps {
         return location;
     }
 
+    private Charger createChargerOnLocation(Location l) {
+        var charger = new Charger();
+        charger.setName(l.getName());
+        charger.setLocation(l);
+        charger.setMaxPower(250);
+        return charger;
+    }
+
     @Given("the following charging stations exist:")
     public void theFollowingChargingStationsExist(List<Location> locations) {
         locationRepository.saveAll(locations);
+        chargerRepository.saveAll(locations.stream().map(this::createChargerOnLocation).toList());
     }
 
     @When("I open the application")
@@ -112,12 +129,10 @@ public class StationDiscoverySteps {
 
     @And("I browse for stations at {float}, {float}")
     public void iBrowseForStationsAt(float lat, float lon) {
-        var latInput = waitFindByTestId("lat-input");
-        var lonInput = waitFindByTestId("lon-input");
+        var addrInput = waitFindByTestId("address-input");
         var coordsButton = waitFindByTestId("coords-button");
 
-        latInput.sendKeys(Float.toString(lat));
-        lonInput.sendKeys(Float.toString(lon));
+        addrInput.sendKeys(String.format("%f, %f", lat, lon));
         coordsButton.click();
 
         var wait = new WebDriverWait(driver, Duration.ofMillis(500));
@@ -128,10 +143,25 @@ public class StationDiscoverySteps {
 
         var zoomOut = driver.findElement(By.className("leaflet-control-zoom-out"));
         for (var i = 0; i < 8; i++) {
-            if (driver.findElements(selector).size() != 1) break;
+            if (driver.findElements(selector).size() > 1) break;
             zoomOut.click();
             wait.until(d -> !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim"));
         }
+    }
+
+    @When("I browse for the closest station to {string}")
+    public void iBrowseForStationClosest(String addr) {
+        var addrInput = waitFindByTestId("address-input");
+        var coordsButton = waitFindByTestId("find-closest");
+
+        addrInput.sendKeys(addr);
+        coordsButton.click();
+        var wait = new WebDriverWait(driver, Duration.ofHours(2));
+        var pane = driver.findElement(By.className("leaflet-map-pane"));
+        wait.until(d -> !d.findElement(By.cssSelector("[data-test-id='location-loading']")).isDisplayed()
+            && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim")
+            && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim")
+        );
     }
 
     @Then("I get the stations:")
@@ -147,6 +177,11 @@ public class StationDiscoverySteps {
                 .containsExactlyInAnyOrder(ids);
     }
 
+    @Then("I get the {string}")
+    public void iGetTheStation(String location) {
+        var items = waitFindByTestId("closest-marker");
+        assertThat(items).isNotNull();
+    }
 
     @And("navigate to the register page")
     public void navigateToTheRegisterPage() {
@@ -177,5 +212,5 @@ public class StationDiscoverySteps {
     @Then("I get redirected to the login page")
     public void iGetRedirectedToTheLoginPage() {
         waitFindByTestId("login-page");
-    }
+
 }

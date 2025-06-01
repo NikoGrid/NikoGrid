@@ -2,6 +2,7 @@ import NavBar from "@/components/navbar";
 import { Toaster } from "@/components/ui/sonner";
 import Devtools from "@/utils/devtools";
 import { HeadContent, Outlet, createRootRoute } from "@tanstack/react-router";
+import { Toaster } from "sonner";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -28,6 +29,7 @@ function RootComponent() {
       </div>
       <Toaster richColors />
       <Devtools />
+      <Toaster />
     </>
   );
 }
