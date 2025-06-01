@@ -51,9 +51,9 @@ interface StationsProps {
 export default function Stations({ setId }: StationsProps) {
   const map = useMap();
 
+  const [ips, setIps] = useState<InterestPoint[]>([]);
   const { mutate, data } = $api.useMutation("get", "/api/v1/locations/nearby");
 
-  const [ips, setIps] = useState<InterestPoint[]>([]);
   useEffect(() => {
     if (data === undefined) return;
     setIps(data);
