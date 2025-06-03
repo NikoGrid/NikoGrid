@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nikogrid
+  namespace: argocd
+spec:
+  destination:
+    namespace: nikogrid-staging
+    server: https://kubernetes.default.svc
+  project: nikogrid
+  source:
+    repoURL: https://github.com/NikoGrid/NikoGrid.git
+    targetRevision: packaging
+    path: infra/chart
+    helm:
+      parameters:
+        - name: backend.image.tag
+          value: latest
+        - name: frontend.image.tag
+          value: latest
+        - name: backend.image.pullPolicy
+          value: Always
+        - name: frontend.image.pullPolicy
+          value: Always
+      valuesObject:
+        ingress:
+          annotations:
+            cert-manager.io/cluster-issuer: "letsencrypt"
+          hosts:
+            - staging.nikogrid.jcapucho.com
+          tls:
+            - secretName: nikogrid-staging-tls
+              hosts:
+                - staging.nikogrid.jcapucho.com
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

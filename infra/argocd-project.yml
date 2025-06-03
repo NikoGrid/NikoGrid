@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: nikogrid
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  destinations:
+    - name: "*"
+      namespace: nikogrid-staging
+      server: https://kubernetes.default.svc
+    - name: "*"
+      namespace: nikogrid-prod
+      server: https://kubernetes.default.svc
+  sourceRepos:
+    - https://github.com/NikoGrid/NikoGrid.git
