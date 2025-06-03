@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nikogrid
+  namespace: argocd
+spec:
+  destination:
+    namespace: nikogrid-staging
+    server: https://kubernetes.default.svc
+  project: nikogrid
+  source:
+    repoURL: https://github.com/NikoGrid/NikoGrid.git
+    targetRevision: v0.1.0
+    path: infra/chart
+    helm:
+      parameters:
+        - name: backend.image.tag
+          value: v0.1.0
+        - name: frontend.image.tag
+          value: v0.1.0
+      valuesObject:
+        ingress:
+          annotations:
+            cert-manager.io/cluster-issuer: "letsencrypt"
+          hosts:
+            - nikogrid.jcapucho.com
+          tls:
+            - secretName: nikogrid-staging-tls
+              hosts:
+                - nikogrid.jcapucho.com
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
