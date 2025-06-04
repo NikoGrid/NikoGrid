@@ -15,7 +15,6 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,8 +178,11 @@ public class StationDiscoverySteps {
 
     @Then("I get the {string}")
     public void iGetTheStation(String location) {
-        var items = waitFindByTestId("closest-marker");
-        assertThat(items).isNotNull();
+        var selector = By.cssSelector("[data-test-highlighted=true]");
+        var wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        wait.until(d -> d.findElement(selector).isDisplayed());
+        var item = driver.findElement(selector);
+        assertThat(item).isNotNull();
     }
 
     @And("navigate to the register page")
@@ -212,5 +214,5 @@ public class StationDiscoverySteps {
     @Then("I get redirected to the login page")
     public void iGetRedirectedToTheLoginPage() {
         waitFindByTestId("login-page");
-
+    }
 }

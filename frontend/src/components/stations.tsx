@@ -165,6 +165,7 @@ function StationMarker({
             data-test-name={
               interestPoint.t === "L" ? interestPoint.n : undefined
             }
+            data-test-highlighted={highlighted}
           >
             <Zap className={cn("h-6 w-6", textColor, fillColor)} />
           </div>,

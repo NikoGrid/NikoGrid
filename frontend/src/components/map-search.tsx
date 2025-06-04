@@ -40,6 +40,17 @@ function validateCoordinates(input: string) {
   return { lat: lat, lon: lon };
 }
 
+async function translateAddress(
+  input: string,
+  provider: OpenStreetMapProvider,
+  setIsGeoLoading: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+  setIsGeoLoading(true);
+  const result = await provider.search({ query: input });
+  setIsGeoLoading(false);
+  return { lat: result[0].y, lon: result[0].x };
+}
+
 interface MapSearchProps extends Point {
   setHighlightedLocation: Dispatch<SetStateAction<number | null>>;
 }
@@ -59,9 +70,8 @@ export default function MapSearch({
     "get",
     "/api/v1/locations/closest",
     {
-      onError(error) {
-        console.error(error);
-        toast("An error occured while getting the closest station");
+      onError() {
+        toast.error("An error occured while getting the closest station");
       },
       onSuccess(data) {
         map.flyTo([data.lat, data.lon], 17, { duration: 1 });
@@ -83,13 +93,9 @@ export default function MapSearch({
       p = { ...coordinates };
     } else {
       try {
-        setIsGeoLoading(true);
-        const result = await provider.search({ query: input });
-        setIsGeoLoading(false);
-        if (result.length < 0) return;
-        p = { lat: result[0].y, lon: result[0].x };
+        p = await translateAddress(input, provider, setIsGeoLoading);
       } catch {
-        toast("An error has occured while getting the Address");
+        toast.error("An error occured while getting the address");
       }
     }
 
@@ -113,11 +119,12 @@ export default function MapSearch({
     if (coordinates !== null) {
       p = { ...coordinates };
     } else {
-      setIsGeoLoading(true);
-      const result = await provider.search({ query: input });
-      setIsGeoLoading(false);
-      if (result.length < 0) return;
-      p = { lat: result[0].y, lon: result[0].x };
+      try {
+        p = await translateAddress(input, provider, setIsGeoLoading);
+      } catch {
+        toast.error("An error occured while getting the address");
+        return;
+      }
     }
     const coords = { lat: p.lat, lng: p.lon } as const;
     if (-90 > coords.lat || coords.lat > 90) return;
@@ -160,6 +167,7 @@ export default function MapSearch({
             <DropdownMenuContent className="mr-5 p-4">
               <div className="flex gap-4">
                 <Checkbox
+                  id="active"
                   checked={available}
                   onCheckedChange={() => {
                     setAvailable((a) => !a);
@@ -167,7 +175,7 @@ export default function MapSearch({
                 />
                 <Tooltip>
                   <TooltipTrigger>
-                    <Label>Active</Label>
+                    <Label htmlFor="active">Active</Label>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>
