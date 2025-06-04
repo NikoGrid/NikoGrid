@@ -9,7 +9,9 @@ import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
+import com.nikogrid.backend.entities.BackendUserDetails;
 import com.nikogrid.backend.entities.Location;
+import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.LocationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.test.context.support.TestExecutionEvent;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,12 +56,23 @@ class LocationControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockitoBean
+    private UserDetailsService userDetailsService;
+
     @BeforeEach
     void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+
+        final User user = new User();
+        user.setEmail("test@test.com");
+        user.setPassword("password");
+        user.setAdmin(true);
+
+        Mockito.when(userDetailsService.loadUserByUsername(Mockito.anyString()))
+                .thenReturn(new BackendUserDetails(user));
     }
 
     @Test
@@ -94,7 +110,7 @@ class LocationControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-20")
     void createLocationOk() throws Exception {
         Mockito.when(locationService.createLocation(Mockito.any())).thenAnswer(i -> {

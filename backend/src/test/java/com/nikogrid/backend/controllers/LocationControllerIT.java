@@ -11,8 +11,10 @@ import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
+import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
+import com.nikogrid.backend.repositories.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -50,6 +53,9 @@ class LocationControllerIT {
     private ChargerRepository chargerRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -58,16 +64,24 @@ class LocationControllerIT {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+
+        final User user = new User();
+        user.setEmail("admin@test.com");
+        user.setPassword("password");
+        user.setAdmin(true);
+
+        this.userRepository.save(user);
     }
 
     @AfterEach
     void resetDb() {
         this.chargerRepository.deleteAll();
         this.locationRepository.deleteAll();
+        this.userRepository.deleteAll();
     }
 
     @Test
-    @WithMockUser
+    @WithUserDetails(value = "admin@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-20")
     void createLocationOk() throws Exception {
         final CreateLocation req = new CreateLocation(

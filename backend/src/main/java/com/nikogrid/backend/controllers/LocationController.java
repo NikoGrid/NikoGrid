@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,6 +39,7 @@ public class LocationController {
     }
 
     @PostMapping("/")
+    @PreAuthorize("principal.getUser().isAdmin()")
     @ResponseStatus(HttpStatus.CREATED)
     public LocationDTO createLocation(@Valid @RequestBody CreateLocation req) {
         final Location location = new Location();
