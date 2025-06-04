@@ -1,6 +1,8 @@
 package com.nikogrid.backend;
 
+import com.nikogrid.backend.exceptions.ChargerUnavailable;
 import com.nikogrid.backend.exceptions.DuplicateUserException;
+import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.ConstraintViolationException;
@@ -107,5 +109,19 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ProblemDetail handleBadCredentials(BadCredentialsException exc) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+    }
+
+    @ExceptionHandler(ReservationConflict.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleReservationConflict(ReservationConflict exc) {
+        return ErrorResponse.builder(exc, HttpStatus.CONFLICT, "Reservation overlaps with existing reservation")
+                .build();
+    }
+
+    @ExceptionHandler(ChargerUnavailable.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleChargerUnavailable(ChargerUnavailable exc) {
+        return ErrorResponse.builder(exc, HttpStatus.BAD_REQUEST, "Selected charger is unavailable")
+                .build();
     }
 }
