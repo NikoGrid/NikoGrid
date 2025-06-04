@@ -1,5 +1,7 @@
 package com.nikogrid.backend.auth;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,8 +26,6 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    public static final String AUTH_COOKIE = "AUTH";
-
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -37,8 +37,7 @@ public class SecurityConfig {
     }
 
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationEntryPoint authEntryPoint, JwtAuthFilter jwtAuthFilter) throws Exception {
+    public void setHttpSecurityDefaults(HttpSecurity http, AuthenticationEntryPoint authEntryPoint) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)  // disable CSRF for token-based API
                 .authorizeHttpRequests(auth -> auth
@@ -64,11 +63,25 @@ public class SecurityConfig {
                 .exceptionHandling(exHandling -> exHandling
                         .authenticationEntryPoint(authEntryPoint))
                 .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // no HTTP sessions
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    }
+
+    @Bean
+    @ConditionalOnBean(JwtAuthFilter.class)
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationEntryPoint authEntryPoint, JwtAuthFilter jwtAuthFilter) throws Exception {
+        setHttpSecurityDefaults(http, authEntryPoint);
+        http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
+    @Bean
+    @ConditionalOnMissingBean(JwtAuthFilter.class)
+    public SecurityFilterChain filterChainNoJwt(HttpSecurity http, AuthenticationEntryPoint authEntryPoint) throws Exception {
+        setHttpSecurityDefaults(http, authEntryPoint);
+        return http.build();
+    }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {

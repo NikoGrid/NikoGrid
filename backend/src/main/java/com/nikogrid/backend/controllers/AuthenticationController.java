@@ -1,7 +1,7 @@
 package com.nikogrid.backend.controllers;
 
 import com.nikogrid.backend.auth.JwtGenerator;
-import com.nikogrid.backend.auth.SecurityConfig;
+import com.nikogrid.backend.auth.SecurityConstants;
 import com.nikogrid.backend.dto.AuthResponse;
 import com.nikogrid.backend.dto.LoginDTO;
 import com.nikogrid.backend.dto.RegisterDTO;
@@ -18,7 +18,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,12 +50,10 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     @PreAuthorize("!isAuthenticated()")
-    @ResponseStatus(HttpStatus.OK)
     public AuthResponse authenticateUser(HttpServletRequest request, HttpServletResponse response, @Valid @RequestBody LoginDTO loginDTO) {
         final var authenticationRequest = UsernamePasswordAuthenticationToken
                 .unauthenticated(loginDTO.getEmail(), loginDTO.getPassword());
         final var authentication = this.authenticationManager.authenticate(authenticationRequest);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         if (authentication == null) {
             throw new BadCredentialsException("Invalid Credentials");
@@ -64,7 +61,7 @@ public class AuthenticationController {
 
         final var token = this.jwtGenerator.generateToken(authentication.getName());
 
-        final var cookie = configureCookie(token.getToken(), token.getExpirationTime(), request.isSecure());
+        final var cookie = configureCookie(token.token(), token.expirationTime(), request.isSecure());
         response.addCookie(cookie);
 
         return new AuthResponse();
@@ -89,7 +86,7 @@ public class AuthenticationController {
 
 
     private Cookie configureCookie(String token, int maxAge, boolean isSecure) {
-        final var cookie = new Cookie(SecurityConfig.AUTH_COOKIE, token);
+        final var cookie = new Cookie(SecurityConstants.AUTH_COOKIE, token);
         cookie.setMaxAge(maxAge);
         cookie.setPath("/");
         cookie.setSecure(secureCookies || isSecure);
