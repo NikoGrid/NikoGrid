@@ -11,7 +11,6 @@ import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
-import com.nikogrid.backend.repositories.UserRepository;
 import com.nikogrid.backend.services.LocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -38,19 +37,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(LocationController.class)
+@ActiveProfiles("test")
 @Import({SecurityConfig.class, TestSecurityBeans.class})
 class LocationControllerTest {
     @Autowired
     private WebApplicationContext context;
 
     private MockMvc mvc;
-
-    @MockitoBean
-    private AuthenticationManager authenticationManager;
-
-    @MockitoBean
-    private UserRepository userRepository;
-
 
     @MockitoBean
     private LocationService locationService;

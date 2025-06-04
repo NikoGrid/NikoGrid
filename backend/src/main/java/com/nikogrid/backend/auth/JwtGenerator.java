@@ -1,7 +1,6 @@
 package com.nikogrid.backend.auth;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,18 +33,6 @@ public class JwtGenerator {
                 .compact();
 
         return new JwtToken(token, expirationSeconds);
-    }
-
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
     }
 
     public String getEmailFromToken(String token) {

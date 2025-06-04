@@ -4,6 +4,7 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestSecurityBeans;
 import com.nikogrid.backend.auth.SecurityConfig;
+import com.nikogrid.backend.auth.SecurityConstants;
 import com.nikogrid.backend.dto.LoginDTO;
 import com.nikogrid.backend.dto.RegisterDTO;
 import com.nikogrid.backend.exceptions.DuplicateUserException;
@@ -50,7 +51,6 @@ class AuthenticationControllerTest {
 
     @MockitoBean
     private UserRepository userRepository;
-
 
     @MockitoBean
     private AuthenticationService authenticationService;
@@ -170,8 +170,8 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isOk())
-                .andExpect(cookie().exists(SecurityConfig.AUTH_COOKIE))
-                .andExpect(cookie().maxAge(SecurityConfig.AUTH_COOKIE, greaterThan(0)));
+                .andExpect(cookie().exists(SecurityConstants.AUTH_COOKIE))
+                .andExpect(cookie().maxAge(SecurityConstants.AUTH_COOKIE, greaterThan(0)));
     }
 
     @Test
@@ -189,7 +189,7 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(cookie().doesNotExist(SecurityConfig.AUTH_COOKIE));
+                .andExpect(cookie().doesNotExist(SecurityConstants.AUTH_COOKIE));
     }
 
     @Test
@@ -203,7 +203,7 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(cookie().doesNotExist(SecurityConfig.AUTH_COOKIE));
+                .andExpect(cookie().doesNotExist(SecurityConstants.AUTH_COOKIE));
     }
 
     @Test
@@ -218,7 +218,7 @@ class AuthenticationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isForbidden())
-                .andExpect(cookie().doesNotExist(SecurityConfig.AUTH_COOKIE));
+                .andExpect(cookie().doesNotExist(SecurityConstants.AUTH_COOKIE));
     }
 
 
@@ -227,7 +227,7 @@ class AuthenticationControllerTest {
     void logoutUnauthorized() throws Exception {
         mvc.perform(get("/api/v1/auth/logout"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(cookie().doesNotExist(SecurityConfig.AUTH_COOKIE))
+                .andExpect(cookie().doesNotExist(SecurityConstants.AUTH_COOKIE))
         ;
     }
 
@@ -237,8 +237,8 @@ class AuthenticationControllerTest {
     void logoutOk() throws Exception {
         mvc.perform(get("/api/v1/auth/logout"))
                 .andExpect(status().isOk())
-                .andExpect(cookie().exists(SecurityConfig.AUTH_COOKIE))
-                .andExpect(cookie().maxAge(SecurityConfig.AUTH_COOKIE, 0));
+                .andExpect(cookie().exists(SecurityConstants.AUTH_COOKIE))
+                .andExpect(cookie().maxAge(SecurityConstants.AUTH_COOKIE, 0));
     }
 
 }
