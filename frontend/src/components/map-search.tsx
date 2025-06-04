@@ -10,12 +10,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { divIcon } from "leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import { LoaderCircle, SlidersHorizontal, Zap } from "lucide-react";
-import { useState } from "react";
-import ReactDOMServer from "react-dom/server";
-import { Tooltip as MapTooltip, Marker, useMap } from "react-leaflet";
+import { LoaderCircle, SlidersHorizontal } from "lucide-react";
+import { useState, type Dispatch, type SetStateAction } from "react";
+import { useMap } from "react-leaflet";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
@@ -42,32 +40,33 @@ function validateCoordinates(input: string) {
   return { lat: lat, lon: lon };
 }
 
-type PointData = {
-  id: number;
-  name: string;
-  lat: number;
-  lon: number;
-};
+interface MapSearchProps extends Point {
+  setHighlightedLocation: Dispatch<SetStateAction<number | null>>;
+}
 
-export default function MapSearch({ lat, lon }: Point) {
+export default function MapSearch({
+  lat,
+  lon,
+  setHighlightedLocation,
+}: MapSearchProps) {
   const map = useMap();
   const provider = new OpenStreetMapProvider();
   const [input, setInput] = useState("");
   const [available, setAvailable] = useState(false);
   const [isGeoLoading, setIsGeoLoading] = useState(false);
-  const [point, setPoint] = useState<PointData | null>();
 
   const { mutate, isPending } = $api.useMutation(
     "get",
     "/api/v1/locations/closest",
     {
-      onError: (error) => {
+      onError(error) {
         console.error(error);
         toast("An error occured while getting the closest station");
       },
-      onSuccess: (data) => {
+      onSuccess(data) {
         map.flyTo([data.lat, data.lon], 17, { duration: 1 });
-        setPoint(data);
+        setIsGeoLoading(false);
+        setHighlightedLocation(data.id);
       },
     },
   );
@@ -129,30 +128,6 @@ export default function MapSearch({ lat, lon }: Point) {
 
   return (
     <>
-      {point && (
-        <Marker
-          position={{ lat: point.lat, lng: point.lon }}
-          icon={divIcon({
-            html: ReactDOMServer.renderToString(
-              <div
-                className="h-10 w-10 rounded-full bg-white p-2 outline-3 outline-red-500"
-                data-test-id="closest-marker"
-              >
-                <Zap
-                  className="text-red-500, h-6 w-6 fill-red-500"
-                  style={{ zIndex: 2000 }}
-                />
-              </div>,
-            ),
-            className: "bg-none",
-            iconAnchor: [20, 20],
-          })}
-        >
-          <MapTooltip permanent={false} direction="bottom">
-            <p>{point.name}</p>
-          </MapTooltip>
-        </Marker>
-      )}
       <div className="absolute top-4 right-4 z-500 space-y-2">
         <Input
           name="address"
