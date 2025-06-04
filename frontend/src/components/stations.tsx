@@ -46,9 +46,13 @@ function useDebouncedCallback<T extends (...args: Parameters<T>) => void>(
 
 interface StationsProps {
   setId: Dispatch<SetStateAction<number | null>>;
+  highlightedId?: number | null;
 }
 
-export default function Stations({ setId }: StationsProps) {
+export default function Stations({
+  setId,
+  highlightedId = null,
+}: StationsProps) {
   const map = useMap();
 
   const [ips, setIps] = useState<InterestPoint[]>([]);
@@ -107,6 +111,7 @@ export default function Stations({ setId }: StationsProps) {
                 handleClick={() => {
                   setId(ip.id);
                 }}
+                highlighted={ip.id === highlightedId}
               />
             );
         }
@@ -119,6 +124,7 @@ interface StationMarkerProps {
   interestPoint: InterestPoint;
   handleClick(): void;
   dataTestId?: string;
+  highlighted?: boolean;
 }
 
 const iconSize = 40 as const;
@@ -127,6 +133,7 @@ function StationMarker({
   interestPoint,
   handleClick,
   dataTestId,
+  highlighted = false,
 }: StationMarkerProps) {
   const { fillColor, textColor, outlineColor } =
     interestPoint.t === "C"
@@ -136,9 +143,9 @@ function StationMarker({
           outlineColor: "outline-fuchsia-700",
         }
       : {
-          fillColor: "fill-teal-700",
-          textColor: "text-teal-700",
-          outlineColor: "outline-teal-700",
+          fillColor: highlighted ? "fill-red-700" : "fill-teal-700",
+          textColor: highlighted ? "text-red-700" : "text-teal-700",
+          outlineColor: highlighted ? "outline-red-700" : "outline-teal-700",
         };
   return (
     <Marker

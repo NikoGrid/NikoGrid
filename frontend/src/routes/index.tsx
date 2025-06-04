@@ -13,6 +13,7 @@ export const Route = createFileRoute("/")({
 function RouteComponent() {
   const { location, locationAvailable } = useCurrentPosition();
   const [stationId, setStationId] = useState<number | null>(null);
+  const [higlightedId, setHighlightedId] = useState<number | null>(null);
 
   const mapRef = useRef<ComponentRef<typeof MapContainer>>(null);
 
@@ -34,11 +35,12 @@ function RouteComponent() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <Stations setId={setStationId} />
+        <Stations setId={setStationId} highlightedId={higlightedId} />
 
         <MapSearch
           lat={location?.coords.latitude ?? 0}
           lon={location?.coords.longitude ?? 0}
+          setHighlightedLocation={setHighlightedId}
         />
       </MapContainer>
       <StationDetails stationId={stationId} setStationId={setStationId} />
