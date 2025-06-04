@@ -113,15 +113,13 @@ public class ErrorHandler {
 
     @ExceptionHandler(ReservationConflict.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleReservationConflict(ReservationConflict exc) {
-        return ErrorResponse.builder(exc, HttpStatus.CONFLICT, "Reservation overlaps with existing reservation")
-                .build();
+    public ProblemDetail handleReservationConflict(ReservationConflict exc) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Reservation overlaps with existing reservation");
     }
 
     @ExceptionHandler(ChargerUnavailable.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleChargerUnavailable(ChargerUnavailable exc) {
-        return ErrorResponse.builder(exc, HttpStatus.BAD_REQUEST, "Selected charger is unavailable")
-                .build();
+    public ProblemDetail handleChargerUnavailable(ChargerUnavailable exc) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Selected charger is unavailable");
     }
 }
