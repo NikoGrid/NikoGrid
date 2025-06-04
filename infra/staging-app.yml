@@ -10,7 +10,7 @@ spec:
   project: nikogrid
   source:
     repoURL: https://github.com/NikoGrid/NikoGrid.git
-    targetRevision: packaging
+    targetRevision: main
     path: infra/chart
     helm:
       parameters:
