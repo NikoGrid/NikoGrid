@@ -15,7 +15,9 @@ public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>(postgresPostgis);
+        final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(postgresPostgis);
+        container.withInitScript("dev-db-init.sql");
+        return container;
     }
 
 }

@@ -9,3 +9,4 @@ spec:
     name: {{ include "nikogrid.fullname" . }}-cluster
   extensions:
     - name: postgis
+    - name: btree_gist
