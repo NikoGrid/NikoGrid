@@ -1,13 +1,11 @@
 package com.nikogrid.backend.steps;
 
-import com.nikogrid.backend.auth.JwtGenerator;
-import com.nikogrid.backend.auth.SecurityConstants;
 import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.repositories.UserRepository;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
-import org.openqa.selenium.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 
@@ -16,21 +14,27 @@ public class ReservationSteps {
     private UserRepository userRepository;
 
     @Autowired
-    private JwtGenerator jwtGenerator;
+    private PasswordEncoder passwordEncoder;
 
     @And("I am authenticated")
     public void iAmAuthenticated() {
         final User user = new User();
         user.setEmail("test@test.com");
-        user.setPassword("password");
+        user.setPassword(passwordEncoder.encode("password"));
         user.setAdmin(false);
 
         userRepository.save(user);
 
-        final var token = this.jwtGenerator.generateToken(user.getEmail());
-        DriverInstance.getDriver().manage().addCookie(new Cookie(SecurityConstants.AUTH_COOKIE, token.token()));
+        final var loginLink = DriverInstance.waitFindByTestId("login-link");
+        loginLink.click();
 
-        DriverInstance.getDriver().navigate().refresh();
+        final var emailInput = DriverInstance.waitFindByTestId("login-email");
+        final var passwordInput = DriverInstance.waitFindByTestId("login-password");
+        final var submitButton = DriverInstance.waitFindByTestId("login-submit-button");
+
+        emailInput.sendKeys(user.getEmail());
+        passwordInput.sendKeys("password");
+        submitButton.click();
     }
 
     @And("I select a charger to book")
