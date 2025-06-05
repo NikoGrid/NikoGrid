@@ -175,7 +175,8 @@ class LocationControllerTest {
                 Mockito.anyFloat(),
                 Mockito.anyFloat(),
                 Mockito.anyFloat(),
-                Mockito.anyInt()
+                Mockito.anyInt(),
+                Mockito.anyBoolean()
         );
     }
 
@@ -192,7 +193,8 @@ class LocationControllerTest {
                 Mockito.anyFloat(),
                 Mockito.anyFloat(),
                 Mockito.anyFloat(),
-                Mockito.anyInt()
+                Mockito.anyInt(),
+                Mockito.anyBoolean()
         )).thenReturn(res);
 
         mvc.perform(get("/api/v1/locations/nearby")
@@ -211,7 +213,8 @@ class LocationControllerTest {
                 -90,
                 180,
                 90,
-                0
+                0,
+                false
         );
     }
 
