@@ -54,17 +54,20 @@ async function translateAddress(
 
 interface MapSearchProps extends Point {
   setHighlightedLocation: Dispatch<SetStateAction<number | null>>;
+  showActive: boolean;
+  setShowActive: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function MapSearch({
   lat,
   lon,
   setHighlightedLocation,
+  showActive: available,
+  setShowActive: setAvailable,
 }: MapSearchProps) {
   const map = useMap();
   const provider = new OpenStreetMapProvider();
   const [input, setInput] = useState("");
-  const [available, setAvailable] = useState(false);
   const [isGeoLoading, setIsGeoLoading] = useState(false);
   const { requestUserLocation } = useCurrentPosition();
 
