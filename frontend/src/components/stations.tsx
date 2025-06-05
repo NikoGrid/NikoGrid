@@ -47,11 +47,13 @@ function useDebouncedCallback<T extends (...args: Parameters<T>) => void>(
 interface StationsProps {
   setId: Dispatch<SetStateAction<number | null>>;
   highlightedId?: number | null;
+  showActive: boolean;
 }
 
 export default function Stations({
   setId,
   highlightedId = null,
+  showActive,
 }: StationsProps) {
   const map = useMap();
 
@@ -73,15 +75,16 @@ export default function Stations({
           e: bounds.getEast(),
           s: bounds.getSouth(),
           z: map.getZoom(),
+          onlyActive: showActive,
         },
       },
     });
-  }, [map, mutate]);
+  }, [map, mutate, showActive]);
   const debouncedGetLocations = useDebouncedCallback(getLocations, 300);
 
   useMapEvent("move", debouncedGetLocations);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(getLocations, []);
+  useEffect(getLocations, [showActive]);
 
   return (
     <>
