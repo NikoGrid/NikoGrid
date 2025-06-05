@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-  "/api/v1/locations/": {
+  "/api/v1/reservations/": {
     parameters: {
       query?: never;
       header?: never;
@@ -14,6 +14,22 @@ export interface paths {
     get?: never;
     put?: never;
     post: operations["createLocation"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/locations/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations["createLocation_1"];
     delete?: never;
     options?: never;
     head?: never;
@@ -133,6 +149,24 @@ export interface components {
         [key: string]: unknown;
       };
     };
+    CreateReservation: {
+      /** Format: int64 */
+      chargedId: number;
+      /** Format: date-time */
+      start: string;
+      /** Format: date-time */
+      end: string;
+    };
+    ReservationDTO: {
+      /** Format: int64 */
+      id: number;
+      /** Format: int64 */
+      chargerId: number;
+      /** Format: date-time */
+      start: string;
+      /** Format: date-time */
+      end: string;
+    };
     CreateLocation: {
       name: string;
       /** Format: float */
@@ -159,6 +193,25 @@ export interface components {
     LoginDTO: {
       email: string;
       password: string;
+    };
+    ChargerDTO: {
+      /** Format: int64 */
+      id: number;
+      name: string;
+      isAvailable: boolean;
+      /** Format: float */
+      maxPower: number;
+      available?: boolean;
+    };
+    LocationDetailsDTO: {
+      /** Format: int64 */
+      id: number;
+      name: string;
+      /** Format: float */
+      lat: number;
+      /** Format: float */
+      lon: number;
+      chargers: components["schemas"]["ChargerDTO"][];
     };
     ClusterInterestPoint: Omit<
       WithRequired<
@@ -203,6 +256,66 @@ export interface components {
 export type $defs = Record<string, never>;
 export interface operations {
   createLocation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateReservation"];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReservationDTO"];
+        };
+      };
+      /** @description Bad Request */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Not Found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+    };
+  };
+  createLocation_1: {
     parameters: {
       query?: never;
       header?: never;
@@ -345,7 +458,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["LocationDTO"];
+          "application/json": components["schemas"]["LocationDetailsDTO"];
         };
       };
       /** @description Unauthorized */

@@ -1,16 +1,7 @@
 import { $api } from "@/api/client";
 import { mediaQueryHelpers, useMediaQuery } from "@/hooks/use-media-query";
-import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
 import type { Dispatch, SetStateAction } from "react";
-import { buttonVariants } from "./ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
+import { ChargerCard } from "./charger-card";
 import {
   Drawer,
   DrawerContent,
@@ -18,20 +9,44 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "./ui/drawer";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "./ui/sheet";
 
 interface StationDetailsProps {
   stationId: number | null;
   setStationId: Dispatch<SetStateAction<number | null>>;
+  container?: React.ComponentProps<typeof SheetContent>["portalContainer"];
 }
 
 function getWrapper(isDesktop: boolean) {
   return isDesktop
     ? {
-        Wrapper: Dialog,
-        Content: DialogContent,
-        Header: DialogHeader,
-        Title: DialogTitle,
-        Description: DialogDescription,
+        Wrapper: (props: Omit<React.ComponentProps<typeof Sheet>, "modal">) => {
+          return <Sheet modal={false} {...props} />;
+        },
+        Content: (
+          props: Omit<
+            React.ComponentProps<typeof SheetContent>,
+            "side" | "overlay" | "onInteractOutside"
+          >,
+        ) => {
+          return (
+            <SheetContent
+              side="left"
+              overlay={false}
+              onInteractOutside={(e) => e.preventDefault()}
+              {...props}
+            />
+          );
+        },
+        Header: SheetHeader,
+        Title: SheetTitle,
+        Description: SheetDescription,
       }
     : {
         Wrapper: Drawer,
@@ -41,28 +56,30 @@ function getWrapper(isDesktop: boolean) {
         Description: DrawerDescription,
       };
 }
+
 interface DetailsProps {
   stationId: number;
   wrapper: ReturnType<typeof getWrapper>;
 }
+
 function Details({ stationId, wrapper }: DetailsProps) {
   const { data, isSuccess } = $api.useQuery("get", "/api/v1/locations/{id}", {
     params: { path: { id: stationId } },
   });
+
   if (!isSuccess) return null;
+
   return (
     <>
       <wrapper.Header>
         <wrapper.Title>{data.name}</wrapper.Title>
       </wrapper.Header>
-      <div className="space-y-4 px-4">
-        <Link
-          to="/station/$stationId"
-          params={{ stationId: data.id }}
-          className={cn(buttonVariants(), "w-full")}
-        >
-          Click for details
-        </Link>
+      <div className="space-y-2 overflow-y-auto px-4">
+        <h1 className="font-semibold">Chargers</h1>
+        {data.chargers.length == 0 && <h2>No chargers at this location</h2>}
+        {data.chargers.map((charger) => (
+          <ChargerCard charger={charger} />
+        ))}
       </div>
     </>
   );
@@ -71,6 +88,7 @@ function Details({ stationId, wrapper }: DetailsProps) {
 export default function StationDetails({
   stationId,
   setStationId,
+  container,
 }: StationDetailsProps) {
   const isDesktop = useMediaQuery(mediaQueryHelpers.minWidth("48rem"));
   const Wrapper = getWrapper(isDesktop);
@@ -84,7 +102,7 @@ export default function StationDetails({
         }
       }}
     >
-      <Wrapper.Content className="h-3/4 md:h-auto">
+      <Wrapper.Content portalContainer={container} className="h-3/4 md:h-auto">
         {stationId !== null && (
           <Details stationId={stationId} wrapper={Wrapper} />
         )}
