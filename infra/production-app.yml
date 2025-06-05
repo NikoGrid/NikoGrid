@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: nikogrid
+  name: nikogrid-prod
   namespace: argocd
 spec:
   destination:
-    namespace: nikogrid-staging
+    namespace: nikogrid-prod
     server: https://kubernetes.default.svc
   project: nikogrid
   source:
@@ -15,9 +15,9 @@ spec:
     helm:
       parameters:
         - name: backend.image.tag
-          value: v0.1.0
+          value: 0.1.0
         - name: frontend.image.tag
-          value: v0.1.0
+          value: 0.1.0
       valuesObject:
         ingress:
           annotations:

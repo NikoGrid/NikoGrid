@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-stack
+  namespace: argocd
+spec:
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: "73.2.0"
+    helm:
+      valuesObject:
+        alertmanager:
+          enabled: false
+
+        grafana:
+          initChownData:
+            enabled: false
+          persistence:
+            type: pvc
+            enabled: true
+          ingress:
+            enabled: true
+            annotations:
+              cert-manager.io/cluster-issuer: "letsencrypt"
+            hosts:
+              - grafana.nikogrid.jcapucho.com
+            tls:
+              - secretName: grafana-tls
+                hosts:
+                  - grafana.nikogrid.jcapucho.com
+
+        prometheus:
+          prometheusSpec:
+            podMonitorNamespaceSelector: {}
+            podMonitorSelectorNilUsesHelmValues: false
+
+            ruleNamespaceSelector: {}
+            ruleSelector: {}
+            ruleSelectorNilUsesHelmValues: false
+
+            serviceMonitorNamespaceSelector: {}
+            serviceMonitorSelector: {}
+            serviceMonitorSelectorNilUsesHelmValues: false
+
+            enableRemoteWriteReceiver: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

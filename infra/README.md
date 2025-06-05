@@ -45,6 +45,12 @@ argocd account update-password \
     --new-password <github-user-password>
 ```
 
+### Adding the monitoring stack:
+
+```sh
+$ kubectl apply -n argocd -f monitoring-stack-app.yml
+```
+
 ### Adding the self hosted github runners
 
 Create a github acess token at https://github.com/settings/tokens/new?scopes=repo

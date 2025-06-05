@@ -8,3 +8,7 @@ spec:
 
   storage:
     size: {{ .Values.database.storageSize }}
+
+  monitoring:
+    enablePodMonitor: true
+
