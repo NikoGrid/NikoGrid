@@ -25,6 +25,8 @@
           pkgs.nodePackages.typescript-language-server
           pkgs.tailwindcss-language-server
 
+          pkgs.k6
+
           pkgs.ansible
           pkgs.argocd
           pkgs.kubernetes-helm
