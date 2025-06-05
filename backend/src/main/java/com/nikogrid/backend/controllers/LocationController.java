@@ -1,8 +1,10 @@
 package com.nikogrid.backend.controllers;
 
+import com.nikogrid.backend.dto.ChargerDTO;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
+import com.nikogrid.backend.dto.LocationDetailsDTO;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.LocationService;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -75,7 +78,23 @@ public class LocationController {
     }
 
     @GetMapping("/{id}")
-    public LocationDTO getLocationById(@PathVariable("id") long id) throws ResourceNotFound {
-        return LocationDTO.fromLocation(this.locationService.getLocationById(id));
+    public LocationDetailsDTO getLocationById(@PathVariable("id") long id) throws ResourceNotFound {
+        final Location location = this.locationService.getLocationById(id);
+
+        List<ChargerDTO> chargers = List.of();
+        if (location.getChargers() != null) {
+            chargers = location.getChargers()
+                    .stream()
+                    .map(ChargerDTO::fromCharger)
+                    .toList();
+        }
+
+        return new LocationDetailsDTO(
+                location.getId(),
+                location.getName(),
+                location.getLat(),
+                location.getLon(),
+                chargers
+        );
     }
 }
