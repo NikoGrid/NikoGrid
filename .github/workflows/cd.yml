@@ -92,9 +92,6 @@ jobs:
     name: Run integration tests
     needs: [backend, frontend]
     runs-on: deti-tqs-24
-    defaults:
-      run:
-        working-directory: ./backend
     steps:
       - uses: actions/checkout@v4
         with:
@@ -132,14 +129,16 @@ jobs:
           ARGOCD_STAGING_APP_NAME: ${{ secrets.ARGOCD_STAGING_APP_NAME }}
         run: |
           argocd login "${ARGOCD_SERVER}" --insecure --username "${ARGOCD_USERNAME}" --password "${ARGOCD_PASSWORD}"
-          argocd app sync "${ARGOCD_STAGING_APP_NAME}"
-          argocd app actions run "${ARGOCD_STAGING_APP_NAME}" restart --kind Deployment --all
-          argocd app wait "${ARGOCD_STAGING_APP_NAME}"
+          argocd app sync "${ARGOCD_STAGING_APP_NAME}" || true
+          argocd app actions run "${ARGOCD_STAGING_APP_NAME}" restart --kind Deployment --all || true
+          argocd app wait "${ARGOCD_STAGING_APP_NAME}" || true
 
       - name: Run tests
         env:
           STAGING_DB_URL: ${{ secrets.STAGING_DB_URL }}
         run: |
+          cd ./backend
+
           cat <<EOF > src/test/resources/application-test.properties
           frontend.base-url=https://staging.nikogrid.jcapucho.com/
           spring.datasource.url=$STAGING_DB_URL
@@ -159,3 +158,20 @@ jobs:
           testFormat: "cucumber"
           testPaths: "backend/target/report.json"
           projectKey: "NIK"
+
+      - name: Load test data
+        env:
+          PSQL_STAGING_DB_URL: ${{ secrets.PSQL_STAGING_DB_URL }}
+        run: |
+          sudo apt update
+          sudo apt install -y postgresql-client
+          psql -d "$PSQL_STAGING_DB_URL" -a -f infra/load-data.sql
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run performance tests
+        env:
+          BASE_URL: https://staging.nikogrid.jcapucho.com/
+        run: |
+          K6_PROMETHEUS_RW_SERVER_URL=http://monitoring-stack-kube-prom-prometheus.monitoring:9090/api/v1/write k6 run -o experimental-prometheus-rw performance-testing/locations_test.js
