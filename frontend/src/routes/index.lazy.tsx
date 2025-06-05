@@ -16,6 +16,8 @@ const defaultCoords = {
 };
 
 function RouteComponent() {
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+
   const { location } = useCurrentPosition();
   const [stationId, setStationId] = useState<number | null>(null);
   const [higlightedId, setHighlightedId] = useState<number | null>(null);
@@ -31,27 +33,33 @@ function RouteComponent() {
   }, [location]);
 
   return (
-    <main className="relative flex grow flex-col" data-test-id="home-page">
-      <MapContainer
-        ref={mapRef}
-        center={defaultCoords}
-        zoom={13}
-        scrollWheelZoom={true}
-        className="relative z-0 grow"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <Stations setId={setStationId} highlightedId={higlightedId} />
+    <div ref={setContainer} className="flex grow">
+      <StationDetails
+        container={container}
+        stationId={stationId}
+        setStationId={setStationId}
+      />
+      <main className="relative flex grow flex-col" data-test-id="home-page">
+        <MapContainer
+          ref={mapRef}
+          center={defaultCoords}
+          zoom={13}
+          scrollWheelZoom={true}
+          className="relative z-0 grow"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <Stations setId={setStationId} highlightedId={higlightedId} />
 
-        <MapSearch
-          lat={location?.coords.latitude ?? 0}
-          lon={location?.coords.longitude ?? 0}
-          setHighlightedLocation={setHighlightedId}
-        />
-      </MapContainer>
-      <StationDetails stationId={stationId} setStationId={setStationId} />
-    </main>
+          <MapSearch
+            lat={location?.coords.latitude ?? 0}
+            lon={location?.coords.longitude ?? 0}
+            setHighlightedLocation={setHighlightedId}
+          />
+        </MapContainer>
+      </main>
+    </div>
   );
 }
