@@ -20,6 +20,7 @@ function RouteComponent() {
 
   const { location } = useCurrentPosition();
   const [stationId, setStationId] = useState<number | null>(null);
+  const [showActive, setShowActive] = useState<boolean>(false);
   const [higlightedId, setHighlightedId] = useState<number | null>(null);
 
   const mapRef = useRef<ComponentRef<typeof MapContainer>>(null);
@@ -51,9 +52,15 @@ function RouteComponent() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <Stations setId={setStationId} highlightedId={higlightedId} />
+          <Stations
+            setId={setStationId}
+            highlightedId={higlightedId}
+            showActive={showActive}
+          />
 
           <MapSearch
+            showActive={showActive}
+            setShowActive={setShowActive}
             lat={location?.coords.latitude ?? 0}
             lon={location?.coords.longitude ?? 0}
             setHighlightedLocation={setHighlightedId}

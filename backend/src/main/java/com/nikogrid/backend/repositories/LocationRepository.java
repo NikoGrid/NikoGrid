@@ -12,18 +12,6 @@ import java.util.stream.Stream;
 
 @Repository
 public interface LocationRepository extends CrudRepository<Location, Long> {
-//    @NativeQuery(value = """
-//            SELECT COUNT(cluster_loc.cluster_id)                  AS numPoints,
-//                   ST_Centroid(ST_COLLECT(geom))                  AS centroid,
-//                   CASE COUNT(id) WHEN 1 THEN any_value(id) END   AS id,
-//                   CASE COUNT(id) WHEN 1 THEN any_value(name) END AS name
-//            FROM (SELECT id, name, geom, ST_CLUSTERDBSCAN(geom, eps := ?5, minpoints := 2) OVER () AS cluster_id
-//                  FROM locations l
-//                  WHERE geom && ST_MakeEnvelope(?1, ?2, ?3, ?4, 4326)) cluster_loc
-//            GROUP BY COALESCE(cluster_loc.cluster_id, id);
-//            """)
-//    Stream<InterestPoint> findInterestPoints(float minLongitude, float minLatitude, float maxLongitude, float maxLatitude, float clusterRadius);
-
     @NativeQuery(value = """
             SELECT
                 COUNT(cluster_loc.cluster_id) AS numPoints,
