@@ -58,7 +58,9 @@ public class SecurityConfig {
                                 "/api/swagger-ui.html",
                                 // Health probes
                                 "/actuator/health/liveness",
-                                "/actuator/health/readiness"
+                                "/actuator/health/readiness",
+                                // Prometheus metrics
+                                "/actuator/prometheus"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
