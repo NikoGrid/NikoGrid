@@ -13,11 +13,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,9 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class StationDiscoverySteps {
-
-    private WebDriver driver;
-
     @Autowired
     private LocationRepository locationRepository;
 
@@ -50,56 +43,12 @@ public class StationDiscoverySteps {
     @Value("${frontend.base-url}")
     private String baseUrl;
 
-
-    @Value("${selenium.docker:false}")
-    private boolean useDocker;
-
-    private WebElement waitFindByTestId(String testId, int duration) {
-        var selector = By.cssSelector(String.format("[data-test-id='%s']", testId));
-        var wait = new WebDriverWait(driver, Duration.ofSeconds(duration));
-        wait.until(d -> d.findElement(selector).isDisplayed());
-        return driver.findElement(selector);
-    }
-
-    private WebElement waitFindByTestId(String testId) {
-        return waitFindByTestId(testId, 5);
-    }
-
-    private List<WebElement> waitFindByTestGroup(String testId, int duration) {
-        var selector = By.cssSelector(String.format("[data-test-group='%s']", testId));
-        var wait = new WebDriverWait(driver, Duration.ofSeconds(duration));
-        wait.until(d -> d.findElement(selector).isDisplayed());
-        return driver.findElements(selector);
-    }
-
-    private List<WebElement> waitFindByTestGroup(String testId) {
-        return waitFindByTestGroup(testId, 5);
-    }
-
-    @Before
-    public void setUpWebDriver() {
-        if (this.driver == null) {
-            var opts = new FirefoxOptions();
-            opts.addPreference("geo.enabled", false);
-            WebDriverManager wdm = WebDriverManager.firefoxdriver();
-
-            if (this.useDocker)
-                wdm = wdm.browserInDocker();
-
-            this.driver = wdm.capabilities(opts).timeout(120).create();
-        }
-        locationRepository.deleteAll();
-        userRepository.deleteAll();
-    }
-
     @After
-    public void tearDownWebDriver() {
-        if (this.driver != null) {
-            this.driver.quit();
-            this.driver = null;
-        }
+    @Before
+    public void cleanDatabase() {
         chargerRepository.deleteAll();
         locationRepository.deleteAll();
+        userRepository.deleteAll();
     }
 
     @DataTableType
@@ -135,26 +84,26 @@ public class StationDiscoverySteps {
 
     @When("I open the application")
     public void iOpenTheApplication() {
-        driver.get(baseUrl);
+        DriverInstance.getDriver().get(baseUrl);
     }
 
     @And("I browse for stations at {float}, {float}")
     public void iBrowseForStationsAt(float lat, float lon) {
-        var addrInput = waitFindByTestId("address-input");
-        var coordsButton = waitFindByTestId("coords-button");
+        var addrInput = DriverInstance.waitFindByTestId("address-input");
+        var coordsButton = DriverInstance.waitFindByTestId("coords-button");
 
         addrInput.sendKeys(String.format("%f, %f", lat, lon));
         coordsButton.click();
 
-        var wait = new WebDriverWait(driver, Duration.ofMillis(500));
-        var pane = driver.findElement(By.className("leaflet-map-pane"));
+        var wait = new WebDriverWait(DriverInstance.getDriver(), Duration.ofMillis(500));
+        var pane = DriverInstance.getDriver().findElement(By.className("leaflet-map-pane"));
         wait.until(d -> !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim"));
 
         var selector = By.cssSelector("[data-test-group='location']");
 
-        var zoomOut = driver.findElement(By.className("leaflet-control-zoom-out"));
+        var zoomOut = DriverInstance.getDriver().findElement(By.className("leaflet-control-zoom-out"));
         for (var i = 0; i < 8; i++) {
-            if (driver.findElements(selector).size() > 1) break;
+            if (DriverInstance.getDriver().findElements(selector).size() > 1) break;
             zoomOut.click();
             wait.until(d -> !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim"));
         }
@@ -162,13 +111,13 @@ public class StationDiscoverySteps {
 
     @When("I browse for the closest station to {string}")
     public void iBrowseForStationClosest(String addr) {
-        var addrInput = waitFindByTestId("address-input");
-        var coordsButton = waitFindByTestId("find-closest");
+        var addrInput = DriverInstance.waitFindByTestId("address-input");
+        var coordsButton = DriverInstance.waitFindByTestId("find-closest");
 
         addrInput.sendKeys(addr);
         coordsButton.click();
-        var wait = new WebDriverWait(driver, Duration.ofHours(2));
-        var pane = driver.findElement(By.className("leaflet-map-pane"));
+        var wait = new WebDriverWait(DriverInstance.getDriver(), Duration.ofHours(2));
+        var pane = DriverInstance.getDriver().findElement(By.className("leaflet-map-pane"));
         wait.until(d -> !d.findElement(By.cssSelector("[data-test-id='location-loading']")).isDisplayed()
                 && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim")
                 && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim")
@@ -177,7 +126,7 @@ public class StationDiscoverySteps {
 
     @Then("I get the stations:")
     public void iGetTheStations(List<Location> locations) {
-        var items = waitFindByTestGroup("location");
+        var items = DriverInstance.waitFindByTestGroup("location");
         var ids = locations
                 .stream()
                 .map(Location::getName)
@@ -191,30 +140,30 @@ public class StationDiscoverySteps {
     @Then("I get the {string}")
     public void iGetTheStation(String location) {
         var selector = By.cssSelector("[data-test-highlighted=true]");
-        var wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        var wait = new WebDriverWait(DriverInstance.getDriver(), Duration.ofSeconds(5));
         wait.until(d -> d.findElement(selector).isDisplayed());
-        var item = driver.findElement(selector);
+        var item = DriverInstance.getDriver().findElement(selector);
         assertThat(item).isNotNull();
     }
 
     @And("navigate to the register page")
     public void navigateToTheRegisterPage() {
-        final var registerLink = waitFindByTestId("register-link");
+        final var registerLink = DriverInstance.waitFindByTestId("register-link");
         registerLink.click();
     }
 
     @Then("I see a register form")
     public void iSeeARegisterForm() {
-        waitFindByTestId("register-form");
+        DriverInstance.waitFindByTestId("register-form");
     }
 
     @And("when I input the email {string} and password {string}")
     public void whenIInputTheEmailAndPassword(String email, String password) {
-        final var emailInput = waitFindByTestId("register-email");
-        final var passwordInput = waitFindByTestId("register-password");
-        final var confirmPasswordInput = waitFindByTestId("register-confirm-password");
+        final var emailInput = DriverInstance.waitFindByTestId("register-email");
+        final var passwordInput = DriverInstance.waitFindByTestId("register-password");
+        final var confirmPasswordInput = DriverInstance.waitFindByTestId("register-confirm-password");
 
-        final var submitButton = waitFindByTestId("register-submit-button");
+        final var submitButton = DriverInstance.waitFindByTestId("register-submit-button");
 
         emailInput.sendKeys(email);
         passwordInput.sendKeys(password);
@@ -225,7 +174,7 @@ public class StationDiscoverySteps {
 
     @Then("I get redirected to the login page")
     public void iGetRedirectedToTheLoginPage() {
-        waitFindByTestId("login-page");
+        DriverInstance.waitFindByTestId("login-page");
     }
 
     @Given("I have the account with email {string} and password {string}")
@@ -239,20 +188,20 @@ public class StationDiscoverySteps {
 
     @And("navigate to the login page")
     public void navigateToTheLoginPage() {
-        final var loginLink = waitFindByTestId("login-link");
+        final var loginLink = DriverInstance.waitFindByTestId("login-link");
         loginLink.click();
     }
 
     @Then("I see a login form")
     public void iSeeALoginForm() {
-        waitFindByTestId("login-form");
+        DriverInstance.waitFindByTestId("login-form");
     }
 
     @And("when I login with the email {string} and password {string}")
     public void whenILoginWithTheEmailAndPassword(String email, String password) {
-        final var emailInput = waitFindByTestId("login-email");
-        final var passwordInput = waitFindByTestId("login-password");
-        final var submitButton = waitFindByTestId("login-submit-button");
+        final var emailInput = DriverInstance.waitFindByTestId("login-email");
+        final var passwordInput = DriverInstance.waitFindByTestId("login-password");
+        final var submitButton = DriverInstance.waitFindByTestId("login-submit-button");
 
         emailInput.sendKeys(email);
         passwordInput.sendKeys(password);
@@ -261,6 +210,16 @@ public class StationDiscoverySteps {
 
     @Then("I get redirected to the home page")
     public void iGetRedirectedToTheHomePage() {
-        waitFindByTestId("home-page");
+        DriverInstance.waitFindByTestId("home-page");
+    }
+
+    @And("I select a station")
+    public void iSelectAStation() {
+        var selector = By.cssSelector("[data-test-highlighted=true]");
+        var wait = new WebDriverWait(DriverInstance.getDriver(), Duration.ofSeconds(5));
+        wait.until(d -> d.findElement(selector).isDisplayed());
+        var item = DriverInstance.getDriver().findElement(selector);
+
+        item.click();
     }
 }
