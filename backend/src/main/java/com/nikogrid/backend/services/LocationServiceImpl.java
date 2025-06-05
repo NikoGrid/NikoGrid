@@ -39,13 +39,14 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     @Transactional
-    public Collection<InterestPointBaseDTO> getNearbyLocations(float minLongitude, float minLatitude, float maxLongitude, float maxLatitude, int zoomLevel) {
+    public Collection<InterestPointBaseDTO> getNearbyLocations(float minLongitude, float minLatitude, float maxLongitude, float maxLatitude, int zoomLevel, boolean onlyActive) {
         if (zoomLevel >= 18) {
             try (Stream<LocationListing> stream = this.locationRepository.getLocationsInEnvelope(
                     minLongitude,
                     minLatitude,
                     maxLongitude,
-                    maxLatitude
+                    maxLatitude,
+                    onlyActive
             )) {
                 return stream
                         .map(InterestPointBaseDTO::fromLocationListing)
@@ -58,7 +59,8 @@ public class LocationServiceImpl implements LocationService {
                     minLatitude,
                     maxLongitude,
                     maxLatitude,
-                    (float) clusterRadius
+                    (float) clusterRadius,
+                    onlyActive
             )) {
                 return stream
                         .map(InterestPointBaseDTO::fromInterestPoint)

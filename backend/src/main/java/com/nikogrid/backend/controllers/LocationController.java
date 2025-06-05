@@ -58,7 +58,8 @@ public class LocationController {
             @RequestParam("e") @Min(-180) @Max(180) float east,
             @RequestParam("s") @Min(-90) @Max(90) float south,
             @RequestParam("n") @Min(-90) @Max(90) float north,
-            @RequestParam("z") @Min(0) @Max(18) int zoom
+            @RequestParam("z") @Min(0) @Max(18) int zoom,
+            @RequestParam(value = "onlyActive", defaultValue = "false") boolean onlyActive
     ) {
         if (west > east)
             throw new ConstraintViolationException("East must be greater than west", Set.of());
@@ -66,7 +67,7 @@ public class LocationController {
         if (south > north)
             throw new ConstraintViolationException("North must be greater than south", Set.of());
 
-        return this.locationService.getNearbyLocations(west, south, east, north, zoom);
+        return this.locationService.getNearbyLocations(west, south, east, north, zoom, onlyActive);
     }
 
     @GetMapping("/closest")
