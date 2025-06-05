@@ -18,6 +18,7 @@ public interface LocationService {
             float minLatitude,
             float maxLongitude,
             float maxLatitude,
-            int zoomLevel
+            int zoomLevel,
+            boolean onlyActive
     );
 }

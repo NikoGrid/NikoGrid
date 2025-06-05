@@ -122,11 +122,11 @@ class LocationServiceImplTest {
         Stream<InterestPoint> stream = Stream.of(ip1, ip2);
         stream = stream.onClose(() -> wasClosed.set(true));
 
-        Mockito.when(this.locationRepository.findInterestPoints(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat()))
+        Mockito.when(this.locationRepository.findInterestPoints(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyBoolean()))
                 .thenReturn(stream);
 
         final Collection<InterestPointBaseDTO> result =
-                this.locationService.getNearbyLocations(-180, -90, 180, 90, 17);
+                this.locationService.getNearbyLocations(-180, -90, 180, 90, 17, false);
 
         assertThat(result)
                 .hasSize(2)
@@ -150,11 +150,11 @@ class LocationServiceImplTest {
         Stream<LocationListing> stream = Stream.of(l1, l2);
         stream = stream.onClose(() -> wasClosed.set(true));
 
-        Mockito.when(this.locationRepository.getLocationsInEnvelope(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat()))
+        Mockito.when(this.locationRepository.getLocationsInEnvelope(Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyFloat(), Mockito.anyBoolean()))
                 .thenReturn(stream);
 
         final Collection<InterestPointBaseDTO> result =
-                this.locationService.getNearbyLocations(-180, -90, 180, 90, 18);
+                this.locationService.getNearbyLocations(-180, -90, 180, 90, 18, false);
 
         assertThat(result)
                 .hasSize(2)

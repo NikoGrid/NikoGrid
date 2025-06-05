@@ -72,7 +72,7 @@ class LocationRepositoryTest {
             entityManager.persistAndFlush(location);
         }
 
-        final Stream<InterestPoint> interestPoints = locationRepository.findInterestPoints(20, 25, 30, 35, 1);
+        final Stream<InterestPoint> interestPoints = locationRepository.findInterestPoints(20, 25, 30, 35, 1, false);
         assertThat(interestPoints)
                 .isNotEmpty()
                 .hasSize(4)
@@ -82,6 +82,54 @@ class LocationRepositoryTest {
                         tuple(2L, true, Geometries.mkPoint(new G2D(24.5f, 30.0f), CoordinateReferenceSystems.WGS84), null),
                         tuple(0L, false, Geometries.mkPoint(new G2D(28.0f, 30.0f), CoordinateReferenceSystems.WGS84), "4"),
                         tuple(0L, false, Geometries.mkPoint(new G2D(28.0f, 33.0f), CoordinateReferenceSystems.WGS84), "5")
+                );
+    }
+
+
+    @Test
+    @Requirement("NIK-11")
+    void findActiveInterestPointsReturnsClustered() {
+        final float[][] points = {
+                // Cluster 1, only 1 active station
+                {21.0f, 30.0f, 1f},
+                {22.0f, 30.0f, 0f},
+                // Cluster 2, 2 active stations
+                {24.0f, 30.0f, 1f},
+                {25.0f, 30.0f, 1f},
+                // No cluster 1, active station
+                {28.0f, 30.0f, 1f},
+                // No cluster 2, active stations
+                {28.0f, 33.0f, 0f},
+                // Outside envelope, 2 active, 2 not active
+                {15.0f, 30.0f, 0f},
+                {35.0f, 30.0f, 0f},
+                {25.0f, 20.0f, 1f},
+                {25.0f, 40.0f, 1f}
+        };
+        for (int i = 0; i < points.length; i++) {
+            final Location location = new Location();
+            location.setName(Integer.toString(i));
+            location.setLon(points[i][0]);
+            location.setLat(points[i][1]);
+            final var stored = entityManager.persistAndFlush(location);
+            if (points[i][2] == 1f) {
+                final Charger charger = new Charger();
+                charger.setMaxPower(250);
+                charger.setLocation(stored);
+                charger.setName(Integer.toString(i));
+                entityManager.persistAndFlush(charger);
+            }
+        }
+
+        final Stream<InterestPoint> interestPoints = locationRepository.findInterestPoints(20, 25, 30, 35, 1, true);
+        assertThat(interestPoints)
+                .isNotEmpty()
+                .hasSize(3)
+                .extracting(InterestPoint::numPoints, InterestPoint::isClustered, InterestPoint::centroid, InterestPoint::name)
+                .containsExactlyInAnyOrder(
+                        tuple(0L, false, Geometries.mkPoint(new G2D(21.0f, 30.0f), CoordinateReferenceSystems.WGS84), "0"),
+                        tuple(2L, true, Geometries.mkPoint(new G2D(24.5f, 30.0f), CoordinateReferenceSystems.WGS84), null),
+                        tuple(0L, false, Geometries.mkPoint(new G2D(28.0f, 30.0f), CoordinateReferenceSystems.WGS84), "4")
                 );
     }
 
@@ -107,7 +155,7 @@ class LocationRepositoryTest {
             entityManager.persistAndFlush(location);
         }
 
-        final Stream<LocationListing> interestPoints = locationRepository.getLocationsInEnvelope(-3, -3, 3, 3);
+        final Stream<LocationListing> interestPoints = locationRepository.getLocationsInEnvelope(-3, -3, 3, 3, false);
         assertThat(interestPoints)
                 .isNotEmpty()
                 .hasSize(3)
@@ -116,6 +164,46 @@ class LocationRepositoryTest {
                         tuple("0", 2.0f, 2.5f),
                         tuple("1", -2.0f, -2.5f),
                         tuple("2", 0.0f, 0.5f)
+                );
+    }
+
+    @Test
+    @Requirement("NIK-11")
+    void getActiveLocationsInEnvelopeReturnsInside() {
+        final float[][] points = {
+                // Inside
+                {2.0f, 2.5f, 1f},
+                {-2.0f, -2.5f, 1f},
+                {0.0f, 0.5f, 0f},
+                // Outside
+                {4.0f, 0.0f, 1f},
+                {-4.0f, 0.0f, 1f},
+                {0.0f, 4.0f, 0f},
+                {0.0f, -4.0f, 0f},
+        };
+        for (int i = 0; i < points.length; i++) {
+            final Location location = new Location();
+            location.setName(Integer.toString(i));
+            location.setLon(points[i][0]);
+            location.setLat(points[i][1]);
+            final var stored = entityManager.persistAndFlush(location);
+            if (points[i][2] == 1f) {
+                final Charger charger = new Charger();
+                charger.setMaxPower(250);
+                charger.setLocation(stored);
+                charger.setName(Integer.toString(i));
+                entityManager.persistAndFlush(charger);
+            }
+        }
+
+        final Stream<LocationListing> interestPoints = locationRepository.getLocationsInEnvelope(-3, -3, 3, 3, true);
+        assertThat(interestPoints)
+                .isNotEmpty()
+                .hasSize(2)
+                .extracting(LocationListing::getName, LocationListing::getLon, LocationListing::getLat)
+                .containsExactlyInAnyOrder(
+                        tuple("0", 2.0f, 2.5f),
+                        tuple("1", -2.0f, -2.5f)
                 );
     }
 
