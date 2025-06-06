@@ -48,7 +48,12 @@ argocd account update-password \
 ### Adding the monitoring stack:
 
 ```sh
-$ kubectl apply -n argocd -f monitoring-stack-app.yml
+$ kubectl create -n monitoring secret generic monitoring-stack-grafana \
+    --from-literal=admin-user='admin' \
+    --from-literal=admin-password='<grafana-password>'
+$ kubectl apply -n argocd -f monitoring/monitoring-stack-app.yml
+$ kubectl apply -n argocd -f monitoring/loki-app.yml
+$ kubectl apply -n argocd -f monitoring/grafana-alloy-app.yml
 ```
 
 ### Adding the self hosted github runners
@@ -69,5 +74,5 @@ Create a github acess token at https://github.com/settings/tokens/new?scopes=rep
 this will be used for the runner. Then create the resources:
 
 ```sh
-$ kubectl apply -n argocd -f argocd-project.yml -f staging-app.yml
+$ kubectl apply -n argocd -f argocd/nikogrid-project.yml -f staging-app.yml
 ```

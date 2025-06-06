@@ -33,6 +33,8 @@ spec:
               - secretName: grafana-tls
                 hosts:
                   - grafana.nikogrid.jcapucho.com
+          admin:
+            existingSecret: monitoring-stack-grafana
 
         prometheus:
           prometheusSpec:

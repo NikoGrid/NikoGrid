@@ -13,12 +13,19 @@ spec:
     targetRevision: v0.1.0
     path: infra/chart
     helm:
-      parameters:
-        - name: backend.image.tag
-          value: 0.1.0
-        - name: frontend.image.tag
-          value: 0.1.0
       valuesObject:
+        backend:
+          image:
+            tag: 0.1.0
+          nodeSelector:
+            beta.kubernetes.io/arch: amd64
+
+        frontend:
+          image:
+            tag: 0.1.0
+          nodeSelector:
+            beta.kubernetes.io/arch: amd64
+
         ingress:
           annotations:
             cert-manager.io/cluster-issuer: "letsencrypt"
