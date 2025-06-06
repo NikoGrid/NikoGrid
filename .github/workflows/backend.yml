@@ -61,7 +61,7 @@ jobs:
           cp target/TEST-junit-jupiter.xml test-reports/integration-tests.xml
 
       - name: Import results to Xray
-        if: always()
+        if: github.ref == 'refs/heads/main'
         uses: mikepenz/xray-action@v3
         with:
           username: ${{ secrets.XRAY_CLIENT_ID }}
