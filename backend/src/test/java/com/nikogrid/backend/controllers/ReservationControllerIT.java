@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -87,7 +88,12 @@ class ReservationControllerIT {
         this.testUser.setPassword("password");
         this.testUser.setAdmin(false);
 
-        this.userRepository.save(this.testUser);
+        final var otherUser = new User();
+        otherUser.setEmail("other@test.com");
+        otherUser.setPassword("password");
+        otherUser.setAdmin(false);
+
+        this.userRepository.saveAll(List.of(this.testUser, otherUser));
     }
 
     @AfterEach
@@ -345,5 +351,97 @@ class ReservationControllerIT {
                 .isCloseTo(reservation4.getStartsAt(), within(1, ChronoUnit.SECONDS));
         assertThat(body.get(3).end)
                 .isCloseTo(reservation4.getEndsAt(), within(1, ChronoUnit.SECONDS));
+    }
+
+    @Test
+    @Requirement("NIK-25")
+    void cancelReservationNoAuthentication() throws Exception {
+        final Location location = new Location();
+        location.setName("Test location");
+        location.setLon(20.0f);
+        location.setLat(30.0f);
+
+        this.locationRepository.save(location);
+
+        final Charger charger = new Charger();
+        charger.setName("AAA1");
+        charger.setAvailable(true);
+        charger.setMaxPower(22.2F);
+        charger.setLocation(location);
+
+        this.chargerRepository.save(charger);
+
+        Reservation reservation = new Reservation();
+        reservation.setUser(this.testUser);
+        reservation.setCharger(charger);
+        reservation.setStartsAt(Instant.parse("2024-01-01T22:22:20.000+00:00"));
+        reservation.setEndsAt(Instant.parse("2024-01-01T22:22:40.000+00:00"));
+
+        reservation = this.reservationRepository.save(reservation);
+
+        mvc.perform(delete("/api/v1/reservations/{id}", reservation.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithUserDetails(value = "other@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Requirement("NIK-25")
+    void cancelReservationNotOwner() throws Exception {
+        final Location location = new Location();
+        location.setName("Test location");
+        location.setLon(20.0f);
+        location.setLat(30.0f);
+
+        this.locationRepository.save(location);
+
+        final Charger charger = new Charger();
+        charger.setName("AAA1");
+        charger.setAvailable(true);
+        charger.setMaxPower(22.2F);
+        charger.setLocation(location);
+
+        this.chargerRepository.save(charger);
+
+        Reservation reservation = new Reservation();
+        reservation.setUser(this.testUser);
+        reservation.setCharger(charger);
+        reservation.setStartsAt(Instant.parse("2024-01-01T22:22:20.000+00:00"));
+        reservation.setEndsAt(Instant.parse("2024-01-01T22:22:40.000+00:00"));
+
+        reservation = this.reservationRepository.save(reservation);
+
+        mvc.perform(delete("/api/v1/reservations/{id}", reservation.getId()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Requirement("NIK-25")
+    void cancelReservationOk() throws Exception {
+        final Location location = new Location();
+        location.setName("Test location");
+        location.setLon(20.0f);
+        location.setLat(30.0f);
+
+        this.locationRepository.save(location);
+
+        final Charger charger = new Charger();
+        charger.setName("AAA1");
+        charger.setAvailable(true);
+        charger.setMaxPower(22.2F);
+        charger.setLocation(location);
+
+        this.chargerRepository.save(charger);
+
+        Reservation reservation = new Reservation();
+        reservation.setUser(this.testUser);
+        reservation.setCharger(charger);
+        reservation.setStartsAt(Instant.parse("2024-01-01T22:22:20.000+00:00"));
+        reservation.setEndsAt(Instant.parse("2024-01-01T22:22:40.000+00:00"));
+
+        reservation = this.reservationRepository.save(reservation);
+
+        mvc.perform(delete("/api/v1/reservations/{id}", reservation.getId()))
+                .andExpect(status().isNoContent());
     }
 }

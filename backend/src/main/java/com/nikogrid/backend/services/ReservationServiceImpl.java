@@ -37,6 +37,11 @@ public class ReservationServiceImpl implements ReservationService {
         }
     }
 
+    @Override
+    public void cancel(long reservationId) {
+        this.reservationRepository.deleteById(reservationId);
+    }
+
     private boolean isReservationOverlapViolation(DataIntegrityViolationException e) {
         if (!(e.getRootCause() instanceof PSQLException psqlException)) return false;
 
