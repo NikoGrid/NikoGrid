@@ -15,6 +15,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -145,5 +146,60 @@ class ReservationRepositoryTest {
         reservation2.setEndsAt(Instant.parse("2025-01-01T14:45:00.000+00:00"));
 
         assertDoesNotThrow(() -> entityManager.persistAndFlush(reservation2));
+    }
+
+    @Test
+    @Requirement("NIK-12")
+    void listReservationsOrder() {
+        // Reservation in 2 hours
+        final Reservation reservation1 = new Reservation();
+        reservation1.setUser(user);
+        reservation1.setCharger(charger);
+
+        reservation1.setStartsAt(Instant.now().plus(2, ChronoUnit.HOURS));
+        reservation1.setEndsAt(Instant.now().plus(3, ChronoUnit.HOURS));
+
+        this.entityManager.persistAndFlush(reservation1);
+
+        // Reservation was yesterday
+        final Reservation reservation2 = new Reservation();
+        reservation2.setUser(user);
+        reservation2.setCharger(charger);
+
+        reservation2.setStartsAt(Instant.now().minus(1, ChronoUnit.DAYS));
+        reservation2.setEndsAt(Instant.now().plus(2, ChronoUnit.HOURS).minus(1, ChronoUnit.DAYS));
+
+        this.entityManager.persistAndFlush(reservation2);
+
+        final Charger charger2 = new Charger();
+        charger2.setName("AAA2");
+        charger2.setAvailable(true);
+        charger2.setMaxPower(22.2F);
+        charger2.setLocation(this.location);
+
+        this.entityManager.persistAndFlush(charger2);
+
+        // Reservation is in 2 hours and 30 minutes
+        final Reservation reservation3 = new Reservation();
+        reservation3.setUser(user);
+        reservation3.setCharger(charger2);
+
+        reservation3.setStartsAt(Instant.now().plus(2, ChronoUnit.HOURS).plus(30, ChronoUnit.MINUTES));
+        reservation3.setEndsAt(Instant.now().plus(3, ChronoUnit.HOURS));
+
+        this.entityManager.persistAndFlush(reservation3);
+
+        // Reservation was 2 days ago
+        final Reservation reservation4 = new Reservation();
+        reservation4.setUser(user);
+        reservation4.setCharger(charger2);
+
+        reservation4.setStartsAt(Instant.now().minus(2, ChronoUnit.DAYS));
+        reservation4.setEndsAt(Instant.now().plus(2, ChronoUnit.HOURS).minus(1, ChronoUnit.DAYS));
+
+        this.entityManager.persistAndFlush(reservation4);
+
+        // The reservations must come byb whichever is closest to the present date, but the future reservations come before the past reservations
+        assertThat(this.reservationRepository.getUserReservations(user.getId())).containsExactly(reservation1, reservation3, reservation2, reservation4);
     }
 }

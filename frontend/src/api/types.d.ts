@@ -11,7 +11,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    get: operations["getUserReservations"];
     put?: never;
     post: operations["createLocation"];
     delete?: never;
@@ -194,6 +194,20 @@ export interface components {
       email: string;
       password: string;
     };
+    ReservationListDTO: {
+      /** Format: int64 */
+      id: number;
+      /** Format: int64 */
+      chargerId: number;
+      /** Format: date-time */
+      start: string;
+      /** Format: date-time */
+      end: string;
+      charger: string;
+      location: string;
+      /** Format: float */
+      maxPower: number;
+    };
     ChargerDTO: {
       /** Format: int64 */
       id: number;
@@ -255,6 +269,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  getUserReservations: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReservationListDTO"][];
+        };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+    };
+  };
   createLocation: {
     parameters: {
       query?: never;
