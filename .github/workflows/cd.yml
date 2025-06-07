@@ -39,7 +39,7 @@ jobs:
           images: ${{ env.REGISTRY }}/nikogrid/backend
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -77,7 +77,7 @@ jobs:
           images: ${{ env.REGISTRY }}/nikogrid/frontend
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
@@ -117,9 +117,9 @@ jobs:
 
       - name: Install argocd
         run: |
-          curl -sSL -o argocd-linux-amd64 "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64"
-          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
-          rm argocd-linux-amd64
+          curl -sSL -o argocd-bin "https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-$(dpkg --print-architecture)"
+          sudo install -m 555 argocd-bin /usr/local/bin/argocd
+          rm argocd-bin
 
       - name: Deploy and wait
         env:
