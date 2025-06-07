@@ -3,6 +3,7 @@ package com.nikogrid.backend.controllers;
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestSecurityBeans;
+import com.nikogrid.backend.auth.ReservationAuthzLogic;
 import com.nikogrid.backend.auth.SecurityConfig;
 import com.nikogrid.backend.dto.CreateReservation;
 import com.nikogrid.backend.dto.ReservationDTO;
@@ -23,8 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.convention.TestBean;
@@ -38,16 +43,19 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ReservationController.class)
 @ActiveProfiles("test")
-@Import({SecurityConfig.class, TestSecurityBeans.class})
+@Import({SecurityConfig.class, TestSecurityBeans.class, ReservationAuthzLogic.class})
 class ReservationControllerTest {
     @Autowired
     private WebApplicationContext context;
@@ -59,6 +67,9 @@ class ReservationControllerTest {
 
     @MockitoBean
     private ReservationService reservationService;
+
+    @MockitoBean
+    private ReservationAuthzLogic reservationAuthzLogic;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -210,5 +221,59 @@ class ReservationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
         Mockito.verify(reservationService, Mockito.times(1)).getUserReservations(Mockito.any());
+    }
+
+    @Test
+    @Requirement("NIK-25")
+    void cancelReservationNoAuth() throws Exception {
+        mvc.perform(delete("/api/v1/reservations/{id}", 1))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @Requirement("NIK-25")
+    void cancelReservationNotOwner() throws Exception {
+        this.setupAuth();
+
+        Mockito.when(reservationAuthzLogic.isReservationOwner(Mockito.any(), Mockito.anyLong()))
+                .thenReturn(new AuthorizationDecision(false));
+
+        mvc.perform(delete("/api/v1/reservations/{id}", 1))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+
+        Mockito.verify(reservationAuthzLogic, Mockito.times(1)).isReservationOwner(Mockito.any(), Mockito.anyLong());
+    }
+
+
+    @Test
+    @WithMockUser
+    @Requirement("NIK-25")
+    void cancelReservationOk() throws Exception {
+        this.setupAuth();
+
+        Mockito.doNothing().when(reservationService).cancel(Mockito.anyLong());
+        Mockito.when(reservationAuthzLogic.isReservationOwner(Mockito.any(), Mockito.anyLong()))
+                .thenReturn(new AuthorizationDecision(true));
+
+        mvc.perform(delete("/api/v1/reservations/{id}", 1))
+                .andDo(print())
+                .andExpect(status().isNoContent());
+
+        Mockito.verify(reservationService, Mockito.times(1)).cancel(Mockito.anyLong());
+        Mockito.verify(reservationAuthzLogic, Mockito.times(1)).isReservationOwner(Mockito.any(), Mockito.anyLong());
+    }
+
+    public void setupAuth() {
+        final var user = new User();
+        final var userDetails = new BackendUserDetails(user);
+        final var authentication = UsernamePasswordAuthenticationToken.authenticated(
+                userDetails,
+                userDetails.getPassword(),
+                List.of()
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

@@ -92,4 +92,12 @@ class ReservationServiceImplTest {
         Mockito.verify(this.reservationRepository, Mockito.times(1))
                 .getUserReservations(user.getId());
     }
+
+    @Test
+    @Requirement("NIK-25")
+    void cancelReservation() {
+        Mockito.doNothing().when(reservationRepository).deleteById(Mockito.anyLong());
+        this.reservationServiceImpl.cancel(1);
+        Mockito.verify(this.reservationRepository, Mockito.times(1)).deleteById(Mockito.anyLong());
+    }
 }

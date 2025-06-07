@@ -21,9 +21,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,7 +57,7 @@ public class ReservationController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReservationDTO createLocation(
+    public ReservationDTO createReservation(
             @Valid @RequestBody CreateReservation req,
             @AuthenticationPrincipal BackendUserDetails userDetails)
             throws ResourceNotFound, ChargerUnavailable, ReservationConflict {
@@ -77,11 +80,18 @@ public class ReservationController {
     }
 
     @GetMapping("/")
-    @Operation(responses = @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ReservationListDTO.class)))}))
+    @Operation(responses = @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json",
+            array = @ArraySchema(schema = @Schema(implementation = ReservationListDTO.class)))))
     public Stream<ReservationListDTO> getUserReservations(
             @AuthenticationPrincipal BackendUserDetails userDetails) {
         return this.reservationService.getUserReservations(userDetails.getUser()).stream()
                 .map(ReservationListDTO::fromReservation);
+    }
+
+    @DeleteMapping("/{reservationId}")
+    @PreAuthorize("@reservationAuthz.isReservationOwner(principal, #reservationId)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void cancelReservation(@PathVariable("reservationId") long reservationId) {
+        reservationService.cancel(reservationId);
     }
 }
