@@ -1,6 +1,7 @@
 package com.nikogrid.backend.services;
 
 import com.nikogrid.backend.entities.Reservation;
+import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ChargerUnavailable;
 import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.repositories.ReservationRepository;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -46,5 +49,9 @@ public class ReservationServiceImpl implements ReservationService {
             return false;
 
         return Objects.equals(serverErrorMessage.getConstraint(), "ec_working_hours_overlap");
+    }
+
+    public List<Reservation> getUserReservations(User user) {
+        return this.reservationRepository.getUserReservations(user.getId());
     }
 }
