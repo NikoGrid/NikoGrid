@@ -13,7 +13,12 @@ export const Route = createRootRoute({
         content: "The perfect place for all your charging needs",
       },
     ],
-    links: [{ rel: "icon", href: "favicon.png" }],
+    links: [
+      { rel: "icon", href: "favicon.png" },
+      { rel: "preconnect", href: "https://a.tile.openstreetmap.org" },
+      { rel: "preconnect", href: "https://b.tile.openstreetmap.org" },
+      { rel: "preconnect", href: "https://c.tile.openstreetmap.org" },
+    ],
   }),
   notFoundComponent: () => "404 Not Found",
 });

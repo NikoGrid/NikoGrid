@@ -1,13 +1,24 @@
-import { useEffect, useState } from "react";
+import { Store, useStore } from "@tanstack/react-store";
+
+interface Coords {
+  lat: number;
+  lng: number;
+}
+
+const locationStore = new Store<Coords | null>(null);
 
 export function useCurrentPosition() {
-  const [location, setLocation] = useState<GeolocationPosition | null>(null);
+  const location = useStore(locationStore);
 
-  useEffect(() => {
+  const requestUserLocation = () => {
+    if (location !== null) return;
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         function (position) {
-          setLocation(position);
+          locationStore.setState({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
         },
         function (error) {
           console.error("Error occurred. Error message: " + error.message);
@@ -16,7 +27,7 @@ export function useCurrentPosition() {
     } else {
       console.warn("Geolocation is not supported by this browser.");
     }
-  }, []);
+  };
 
-  return { location };
+  return { location, requestUserLocation };
 }
