@@ -20,4 +20,7 @@ export default defineConfig({
   server: {
     allowedHosts: ["host.containers.internal"],
   },
+  build: {
+    sourcemap: true,
+  },
 });

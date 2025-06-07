@@ -152,11 +152,10 @@ export default function RegisterForm() {
             {isPending && <LoaderCircle className="animate-spin" />}
           </Button>
           <p className="text-sm">
-            Don't have an account yet? Register{" "}
+            Don't have an account yet?{" "}
             <Link to="/register" className="cursor-pointer underline">
-              here
+              Register here.
             </Link>
-            .
           </p>
         </div>
       </form>

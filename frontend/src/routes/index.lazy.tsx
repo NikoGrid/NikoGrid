@@ -26,10 +26,7 @@ function RouteComponent() {
 
   useEffect(() => {
     if (location === null) return;
-    mapRef.current?.setView({
-      lat: location.coords.latitude,
-      lng: location.coords.longitude,
-    });
+    mapRef.current?.setView(location);
   }, [location]);
 
   return (
@@ -40,6 +37,7 @@ function RouteComponent() {
         setStationId={setStationId}
       />
       <main className="relative flex grow flex-col" data-test-id="home-page">
+        <span className="sr-only">Map</span>
         <MapContainer
           ref={mapRef}
           center={defaultCoords}
@@ -54,8 +52,8 @@ function RouteComponent() {
           <Stations setId={setStationId} highlightedId={higlightedId} />
 
           <MapSearch
-            lat={location?.coords.latitude ?? 0}
-            lon={location?.coords.longitude ?? 0}
+            lat={location?.lat ?? defaultCoords.lat}
+            lon={location?.lng ?? defaultCoords.lng}
             setHighlightedLocation={setHighlightedId}
           />
         </MapContainer>

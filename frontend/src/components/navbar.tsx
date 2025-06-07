@@ -1,9 +1,11 @@
 import { $api } from "@/api/client";
+import { mediaQueryHelpers, useMediaQuery } from "@/hooks/use-media-query";
 import { useUser } from "@/hooks/use-user";
 import { cn } from "@/lib/utils";
 import { refreshUser, type User } from "@/store/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { Menu } from "lucide-react";
 import type { ComponentProps } from "react";
 import {
   AlertDialog,
@@ -24,9 +26,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "./ui/sheet";
 
 export default function NavBar() {
-  const { user } = useUser();
   return (
     <header className="flex items-center justify-between border-b px-8 py-4 shadow-md">
       <nav>
@@ -34,8 +36,36 @@ export default function NavBar() {
           <Logo />
         </Link>
       </nav>
-      {user === null ? <NoAuth /> : <Auth user={user} />}
+      <AuthSection></AuthSection>
     </header>
+  );
+}
+
+function AuthSection() {
+  const { user } = useUser();
+  const isDesktop = useMediaQuery(mediaQueryHelpers.minWidth("48rem"));
+  if (isDesktop)
+    return <>{user === null ? <NoAuth /> : <Auth user={user} />}</>;
+
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button>
+          <Menu />
+          <span className="sr-only">Navigation menu</span>
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader />
+        <section className="px-4">
+          {user === null ? (
+            <NoAuth className="grid gap-2 space-x-0" />
+          ) : (
+            <Auth user={user} />
+          )}
+        </section>
+      </SheetContent>
+    </Sheet>
   );
 }
 
