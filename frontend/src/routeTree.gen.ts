@@ -19,6 +19,7 @@ import { Route as StationStationIdIndexImport } from './routes/station/$stationI
 // Create Virtual Routes
 
 const IndexLazyImport = createFileRoute('/')()
+const ProfileIndexLazyImport = createFileRoute('/profile/')()
 const AuthRegisterIndexLazyImport = createFileRoute('/_auth/register/')()
 const AuthLoginIndexLazyImport = createFileRoute('/_auth/login/')()
 
@@ -34,6 +35,12 @@ const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const ProfileIndexLazyRoute = ProfileIndexLazyImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/profile/index.lazy').then((d) => d.Route))
 
 const AuthRegisterIndexLazyRoute = AuthRegisterIndexLazyImport.update({
   id: '/register/',
@@ -73,6 +80,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileIndexLazyImport
       parentRoute: typeof rootRoute
     }
     '/station/$stationId/': {
@@ -116,6 +130,7 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 export interface FileRoutesByFullPath {
   '/': typeof IndexLazyRoute
   '': typeof AuthRouteWithChildren
+  '/profile': typeof ProfileIndexLazyRoute
   '/station/$stationId': typeof StationStationIdIndexRoute
   '/login': typeof AuthLoginIndexLazyRoute
   '/register': typeof AuthRegisterIndexLazyRoute
@@ -124,6 +139,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexLazyRoute
   '': typeof AuthRouteWithChildren
+  '/profile': typeof ProfileIndexLazyRoute
   '/station/$stationId': typeof StationStationIdIndexRoute
   '/login': typeof AuthLoginIndexLazyRoute
   '/register': typeof AuthRegisterIndexLazyRoute
@@ -133,6 +149,7 @@ export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexLazyRoute
   '/_auth': typeof AuthRouteWithChildren
+  '/profile/': typeof ProfileIndexLazyRoute
   '/station/$stationId/': typeof StationStationIdIndexRoute
   '/_auth/login/': typeof AuthLoginIndexLazyRoute
   '/_auth/register/': typeof AuthRegisterIndexLazyRoute
@@ -140,13 +157,20 @@ export interface FileRoutesById {
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/station/$stationId' | '/login' | '/register'
+  fullPaths:
+    | '/'
+    | ''
+    | '/profile'
+    | '/station/$stationId'
+    | '/login'
+    | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/station/$stationId' | '/login' | '/register'
+  to: '/' | '' | '/profile' | '/station/$stationId' | '/login' | '/register'
   id:
     | '__root__'
     | '/'
     | '/_auth'
+    | '/profile/'
     | '/station/$stationId/'
     | '/_auth/login/'
     | '/_auth/register/'
@@ -156,12 +180,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexLazyRoute: typeof IndexLazyRoute
   AuthRoute: typeof AuthRouteWithChildren
+  ProfileIndexLazyRoute: typeof ProfileIndexLazyRoute
   StationStationIdIndexRoute: typeof StationStationIdIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexLazyRoute: IndexLazyRoute,
   AuthRoute: AuthRouteWithChildren,
+  ProfileIndexLazyRoute: ProfileIndexLazyRoute,
   StationStationIdIndexRoute: StationStationIdIndexRoute,
 }
 
@@ -177,6 +203,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_auth",
+        "/profile/",
         "/station/$stationId/"
       ]
     },
@@ -189,6 +216,9 @@ export const routeTree = rootRoute
         "/_auth/login/",
         "/_auth/register/"
       ]
+    },
+    "/profile/": {
+      "filePath": "profile/index.lazy.tsx"
     },
     "/station/$stationId/": {
       "filePath": "station/$stationId/index.tsx"

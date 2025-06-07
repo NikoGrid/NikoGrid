@@ -41,6 +41,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -199,5 +200,19 @@ class ReservationControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(expected)));
 
         Mockito.verify(reservationService, Mockito.times(1)).create(Mockito.any());
+    }
+
+    @Test
+    @Requirement("NIK-13")
+    void getReservationsNoAuth() throws Exception {
+        mvc.perform(get("/api/v1/reservations/")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Requirement("NIK-13")
+    void getReservations() throws Exception {
+        mvc.perform(get("/api/v1/reservations/")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+        Mockito.verify(reservationService, Mockito.times(1)).getUserReservations(Mockito.any());
     }
 }

@@ -57,13 +57,26 @@ function Auth({ user }: AuthProps) {
     <AlertDialog>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="link" onClick={() => mutate({})}>
+          <Button
+            variant="link"
+            onClick={() => mutate({})}
+            data-test-id="profile-menu-trigger"
+          >
             {user.email}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuLabel className="text-center">Account</DropdownMenuLabel>
           <DropdownMenuSeparator />
+          <DropdownMenuItem>
+            <Link
+              to="/profile"
+              className={cn(buttonVariants({ variant: "link" }))}
+              data-test-id="go-to-profile"
+            >
+              Go To Profile
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <AlertDialogTrigger asChild>
               <Button className="w-full" variant="destructive">
