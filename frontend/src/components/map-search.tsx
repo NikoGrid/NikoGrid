@@ -9,9 +9,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCurrentPosition } from "@/hooks/use-current-position";
 import { cn } from "@/lib/utils";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import { LoaderCircle, SlidersHorizontal } from "lucide-react";
+import { LoaderCircle, LocateFixed, SlidersHorizontal } from "lucide-react";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useMap } from "react-leaflet";
 import { toast } from "sonner";
@@ -65,6 +66,7 @@ export default function MapSearch({
   const [input, setInput] = useState("");
   const [available, setAvailable] = useState(false);
   const [isGeoLoading, setIsGeoLoading] = useState(false);
+  const { requestUserLocation } = useCurrentPosition();
 
   const { mutate, isPending } = $api.useMutation(
     "get",
@@ -126,7 +128,7 @@ export default function MapSearch({
         return;
       }
     }
-    const coords = { lat: p.lat, lng: p.lon } as const;
+    const coords = { lat: p.lat, lng: p.lon };
     if (-90 > coords.lat || coords.lat > 90) return;
     if (-180 > coords.lng || coords.lng > 180) return;
 
@@ -136,13 +138,30 @@ export default function MapSearch({
   return (
     <>
       <div className="absolute top-4 right-4 z-500 space-y-2">
-        <Input
-          name="address"
-          placeholder="Use Current Location"
-          data-test-id="address-input"
-          className="bg-secondary"
-          onChange={(e) => setInput(e.target.value)}
-        />
+        <div className="flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                onClick={() => {
+                  requestUserLocation();
+                  map.setView({ lat, lng: lon });
+                }}
+              >
+                <LocateFixed />
+                <span className="sr-only">Current Locattion</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Current Location</TooltipContent>
+          </Tooltip>
+          <Input
+            name="address"
+            placeholder="Use Current Location"
+            data-test-id="address-input"
+            className="bg-secondary"
+            onChange={(e) => setInput(e.target.value)}
+          />
+        </div>
         <div className="flex items-center gap-2">
           <Button
             className="flex-grow"
@@ -162,6 +181,7 @@ export default function MapSearch({
             <DropdownMenuTrigger asChild>
               <Button>
                 <SlidersHorizontal />
+                <span className="sr-only">Filters</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-5 p-4">

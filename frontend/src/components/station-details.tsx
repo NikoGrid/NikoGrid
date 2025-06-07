@@ -76,7 +76,7 @@ function Details({ stationId, wrapper }: DetailsProps) {
       </wrapper.Header>
       <div className="space-y-2 overflow-y-auto px-4">
         <h1 className="font-semibold">Chargers</h1>
-        {data.chargers.length == 0 && <h2>No chargers at this location</h2>}
+        {data.chargers.length == 0 && <p>No chargers at this location</p>}
         {data.chargers.map((charger) => (
           <ChargerCard charger={charger} />
         ))}
