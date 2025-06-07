@@ -1,7 +1,5 @@
 package com.nikogrid.backend.steps;
 
-import com.nikogrid.backend.auth.JwtGenerator;
-import com.nikogrid.backend.auth.SecurityConstants;
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.entities.Reservation;
@@ -14,13 +12,11 @@ import io.cucumber.java.DataTableType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -153,7 +149,7 @@ public class ReservationSteps {
     public void confirmStartInstant(int cardIdx, int instantOffset) {
         final var cards = DriverInstance.waitFindByTestGroup("reservation-card");
         final var card = cards.get(cardIdx - 1);
-        var selector = By.cssSelector(String.format("[data-test-id='reservation-start-instant']"));
+        var selector = By.cssSelector("[data-test-id='reservation-start-instant']");
         final var instant = LocalDateTime.parse(card.findElement(selector).getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm"));
         assertThat(instant).isCloseTo(LocalDateTime.now().plus(instantOffset, ChronoUnit.HOURS), within(1, ChronoUnit.HOURS));
 
