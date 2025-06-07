@@ -261,7 +261,7 @@ class ReservationControllerIT {
         final List<ReservationListDTO> body = objectMapper.readValue(res.getResponse().getContentAsString(), new TypeReference<ArrayList<ReservationListDTO>>() {
         });
 
-        assertThat(body.size()).isEqualTo(4);
+        assertThat(body).hasSize(4);
         assertThat(body.get(0).charger).isEqualTo(charger.getName());
         assertThat(body.get(0).maxPower).isEqualTo(charger.getMaxPower());
         assertThat(body.get(0).location).isEqualTo(location.getName());

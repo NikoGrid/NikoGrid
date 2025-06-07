@@ -212,7 +212,7 @@ class ReservationControllerTest {
     @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-13")
     void getReservations() throws Exception {
-        mvc.perform(get("/api/v1/reservations/")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+        mvc.perform(get("/api/v1/reservations/")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
         Mockito.verify(reservationService, Mockito.times(1)).getUserReservations(Mockito.any());
     }
 }
