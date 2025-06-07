@@ -9,5 +9,8 @@ import java.util.List;
 
 public interface ReservationService {
     Reservation create(Reservation reservation) throws ReservationConflict, ChargerUnavailable;
+
     List<Reservation> getUserReservations(User user);
+
+    void cancel(long reservationId);
 }
