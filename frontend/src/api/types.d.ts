@@ -498,6 +498,7 @@ export interface operations {
         s: number;
         n: number;
         z: number;
+        onlyActive?: boolean;
       };
       header?: never;
       path?: never;
