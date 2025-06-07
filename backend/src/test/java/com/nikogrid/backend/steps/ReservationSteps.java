@@ -142,4 +142,18 @@ public class ReservationSteps {
                 .isCloseTo(
                         LocalDateTime.now().plusHours(instantOffset), within(1, ChronoUnit.HOURS));
     }
+
+    @And("when I cancel the first reservation")
+    public void whenICancelTheFirstReservation() {
+        final var cards = DriverInstance.waitFindByTestGroup("reservation-card");
+        final var card = cards.get(0);
+
+        final var cancelButton = card.findElement(By.cssSelector("[data-test-id='cancel-button']"));
+        cancelButton.click();
+
+        final var confirmCancelButton = DriverInstance.waitFindByTestId("confirm-cancel-button");
+        confirmCancelButton.click();
+
+        DriverInstance.waitFindByTestGroup("success");
+    }
 }

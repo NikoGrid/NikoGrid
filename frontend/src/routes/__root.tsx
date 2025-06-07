@@ -31,9 +31,8 @@ function RootComponent() {
         <NavBar />
         <Outlet />
       </div>
-      <Toaster richColors />
       <Devtools />
-      <Toaster />
+      <Toaster richColors />
     </>
   );
 }

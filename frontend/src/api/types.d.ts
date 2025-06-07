@@ -13,7 +13,7 @@ export interface paths {
     };
     get: operations["getUserReservations"];
     put?: never;
-    post: operations["createLocation"];
+    post: operations["createReservation"];
     delete?: never;
     options?: never;
     head?: never;
@@ -29,7 +29,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    post: operations["createLocation_1"];
+    post: operations["createLocation"];
     delete?: never;
     options?: never;
     head?: never;
@@ -127,6 +127,22 @@ export interface paths {
     put?: never;
     post?: never;
     delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reservations/{reservationId}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations["cancelReservation"];
     options?: never;
     head?: never;
     patch?: never;
@@ -307,7 +323,7 @@ export interface operations {
       };
     };
   };
-  createLocation: {
+  createReservation: {
     parameters: {
       query?: never;
       header?: never;
@@ -367,7 +383,7 @@ export interface operations {
       };
     };
   };
-  createLocation_1: {
+  createLocation: {
     parameters: {
       query?: never;
       header?: never;
@@ -656,6 +672,44 @@ export interface operations {
         content: {
           "*/*": components["schemas"]["AuthResponse"];
         };
+      };
+      /** @description Unauthorized */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/problem+json": components["schemas"]["ProblemDetail"];
+        };
+      };
+    };
+  };
+  cancelReservation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reservationId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Unauthorized */
       401: {
