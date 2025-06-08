@@ -17,11 +17,11 @@ public class ReservationAuthzLogic {
     }
 
     public AuthorizationDecision isReservationOwner(BackendUserDetails user, long reservationId) {
-        final var reservation = this.reservationRepository.getReservationById(reservationId);
+        final var reservation = this.reservationRepository.findById(reservationId);
 
         return new AuthorizationDecision(
                 reservation
-                        .map((r) -> r.getUser().getId().equals(user.getUser().getId()))
+                        .map(r -> r.getUser().getId().equals(user.getUser().getId()))
                         .orElse(false));
 
     }

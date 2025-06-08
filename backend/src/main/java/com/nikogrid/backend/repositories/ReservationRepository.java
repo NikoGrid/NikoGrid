@@ -6,7 +6,6 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -23,6 +22,4 @@ public interface ReservationRepository extends CrudRepository<Reservation, Long>
                         CASE WHEN r.starts_at < CURRENT_TIMESTAMP THEN r.starts_at END DESC
                     """)
     List<Reservation> getUserReservations(UUID userId);
-
-    Optional<Reservation> getReservationById(long reservationId);
 }
