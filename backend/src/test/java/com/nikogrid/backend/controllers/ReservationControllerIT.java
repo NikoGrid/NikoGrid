@@ -1,6 +1,16 @@
 package com.nikogrid.backend.controllers;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestcontainersConfiguration;
@@ -15,6 +25,7 @@ import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
 import com.nikogrid.backend.repositories.ReservationRepository;
 import com.nikogrid.backend.repositories.UserRepository;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,41 +48,25 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Import(TestcontainersConfiguration.class)
 class ReservationControllerIT {
-    @Autowired
-    private WebApplicationContext context;
+    @Autowired private WebApplicationContext context;
 
     private MockMvc mvc;
 
-    @Autowired
-    private LocationRepository locationRepository;
+    @Autowired private LocationRepository locationRepository;
 
-    @Autowired
-    private ChargerRepository chargerRepository;
+    @Autowired private ChargerRepository chargerRepository;
 
     private User testUser;
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private ReservationRepository reservationRepository;
+    @Autowired private ReservationRepository reservationRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @TestBean
-    private Clock clock;
+    @TestBean private Clock clock;
 
     static Clock clock() {
         return Clock.fixed(Instant.parse("2024-01-01T12:00:00.000Z"), ZoneId.of("UTC"));
@@ -99,18 +94,37 @@ class ReservationControllerIT {
     @Test
     @Requirement("NIK-12")
     void createReservationNoAuthentication() throws Exception {
-        final CreateReservation req = new CreateReservation(1L, Instant.parse("2024-01-01T22:00:00.000+00:00"), Instant.parse("2024-01-01T23:00:00.000+00:00"));
+        final CreateReservation req =
+                new CreateReservation(
+                        1L,
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        mvc.perform(post("/api/v1/reservations/").contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(req))).andExpect(status().isUnauthorized()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
     }
 
     @Test
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
     void createReservationChargerNotFound() throws Exception {
-        final CreateReservation req = new CreateReservation(1L, Instant.parse("2024-01-01T22:00:00.000+00:00"), Instant.parse("2024-01-01T23:00:00.000+00:00"));
+        final CreateReservation req =
+                new CreateReservation(
+                        1L,
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        mvc.perform(post("/api/v1/reservations/").contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(req))).andExpect(status().isNotFound()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)).andReturn();
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+                .andReturn();
     }
 
     @Test
@@ -132,11 +146,20 @@ class ReservationControllerIT {
 
         this.chargerRepository.save(charger);
 
-        final CreateReservation req = new CreateReservation(charger.getId(), Instant.parse("2024-01-01T22:00:00.000+00:00"), Instant.parse("2024-01-01T23:00:00.000+00:00"));
+        final CreateReservation req =
+                new CreateReservation(
+                        charger.getId(),
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        mvc.perform(post("/api/v1/reservations/").contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(req))).andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)).andReturn();
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+                .andReturn();
     }
-
 
     @Test
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
@@ -165,9 +188,19 @@ class ReservationControllerIT {
 
         this.reservationRepository.save(reservation);
 
-        final CreateReservation req = new CreateReservation(charger.getId(), Instant.parse("2024-01-01T22:00:00.000+00:00"), Instant.parse("2024-01-01T23:00:00.000+00:00"));
+        final CreateReservation req =
+                new CreateReservation(
+                        charger.getId(),
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        mvc.perform(post("/api/v1/reservations/").contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(req))).andExpect(status().isConflict()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE)).andReturn();
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isConflict())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
+                .andReturn();
     }
 
     @Test
@@ -189,23 +222,41 @@ class ReservationControllerIT {
 
         this.chargerRepository.save(charger);
 
-        final CreateReservation req = new CreateReservation(charger.getId(), Instant.parse("2024-01-01T22:00:00.000+00:00"), Instant.parse("2024-01-01T23:00:00.000+00:00"));
+        final CreateReservation req =
+                new CreateReservation(
+                        charger.getId(),
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        final MvcResult res = mvc.perform(post("/api/v1/reservations/").contentType(MediaType.APPLICATION_JSON_VALUE).content(objectMapper.writeValueAsString(req))).andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+        final MvcResult res =
+                mvc.perform(
+                                post("/api/v1/reservations/")
+                                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                        .content(objectMapper.writeValueAsString(req)))
+                        .andExpect(status().isCreated())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .andReturn();
 
-        final ReservationDTO body = objectMapper.readValue(res.getResponse().getContentAsString(), ReservationDTO.class);
+        final ReservationDTO body =
+                objectMapper.readValue(
+                        res.getResponse().getContentAsString(), ReservationDTO.class);
 
         assertThat(body.getChargerId()).isEqualTo(req.chargedId);
         assertThat(body.getStart()).isEqualTo(req.start);
         assertThat(body.getEnd()).isEqualTo(req.end);
 
-        assertThat(this.reservationRepository.findAll()).hasSize(1).extracting(Reservation::getId, r -> r.getUser().getEmail()).containsExactlyInAnyOrder(tuple(body.id, "test@test.com"));
+        assertThat(this.reservationRepository.findAll())
+                .hasSize(1)
+                .extracting(Reservation::getId, r -> r.getUser().getEmail())
+                .containsExactlyInAnyOrder(tuple(body.id, "test@test.com"));
     }
 
     @Test
     @Requirement("NIK-12")
     void getReservationNoAuth() throws Exception {
-        mvc.perform(get("/api/v1/reservations/")).andExpect(status().isUnauthorized()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+        mvc.perform(get("/api/v1/reservations/"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
     }
 
     @Test
@@ -256,22 +307,36 @@ class ReservationControllerIT {
         this.reservationRepository.save(reservation3);
         this.reservationRepository.save(reservation4);
 
-        final MvcResult res = mvc.perform(get("/api/v1/reservations/")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
+        final MvcResult res =
+                mvc.perform(get("/api/v1/reservations/"))
+                        .andExpect(status().isOk())
+                        .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                        .andReturn();
 
-        final List<ReservationListDTO> body = objectMapper.readValue(res.getResponse().getContentAsString(), new TypeReference<ArrayList<ReservationListDTO>>() {
-        });
+        final List<ReservationListDTO> body =
+                objectMapper.readValue(
+                        res.getResponse().getContentAsString(),
+                        new TypeReference<ArrayList<ReservationListDTO>>() {});
 
         assertThat(body).hasSize(4);
         assertThat(body.get(0).charger).isEqualTo(charger.getName());
         assertThat(body.get(0).maxPower).isEqualTo(charger.getMaxPower());
         assertThat(body.get(0).location).isEqualTo(location.getName());
-        assertThat(body.get(0).start).isCloseTo(reservation1.getStartsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(0).end).isCloseTo(reservation1.getEndsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(1).start).isCloseTo(reservation2.getStartsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(1).end).isCloseTo(reservation2.getEndsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(2).start).isCloseTo(reservation3.getStartsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(2).end).isCloseTo(reservation3.getEndsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(3).start).isCloseTo(reservation4.getStartsAt(), within(1, ChronoUnit.SECONDS));
-        assertThat(body.get(3).end).isCloseTo(reservation4.getEndsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(0).start)
+                .isCloseTo(reservation1.getStartsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(0).end)
+                .isCloseTo(reservation1.getEndsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(1).start)
+                .isCloseTo(reservation2.getStartsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(1).end)
+                .isCloseTo(reservation2.getEndsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(2).start)
+                .isCloseTo(reservation3.getStartsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(2).end)
+                .isCloseTo(reservation3.getEndsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(3).start)
+                .isCloseTo(reservation4.getStartsAt(), within(1, ChronoUnit.SECONDS));
+        assertThat(body.get(3).end)
+                .isCloseTo(reservation4.getEndsAt(), within(1, ChronoUnit.SECONDS));
     }
 }
