@@ -4,7 +4,8 @@ Feature: Slot Booking and Scheduling
 	#As a registered user, I want to reserve a slot in a charging station, so that I can use it later
   @TEST_NIK-370 @REQ_NIK-12
   Scenario: Test Book a slot
-    Given the following charging stations exist:
+	Given I have the account with email "test@test.com" and password "password"
+    And the following charging stations exist:
       | name      | latitude | longitude | availability |
       | Station 1 | 0.0      | 0.0       | FREE         |
     When I open the application

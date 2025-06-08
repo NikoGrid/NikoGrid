@@ -17,7 +17,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -89,48 +88,8 @@ class ReservationServiceImplTest {
     @Test
     @Requirement("NIK-13")
     void getUserReservations() {
-        // Reservation in 2 hours
-        final Reservation reservation1 = new Reservation();
-        reservation1.setUser(user);
-        reservation1.setCharger(charger);
-
-        reservation1.setStartsAt(Instant.now().plus(2, ChronoUnit.HOURS));
-        reservation1.setEndsAt(Instant.now().plus(3, ChronoUnit.HOURS));
-
-
-        // Reservation was yesterday
-        final Reservation reservation2 = new Reservation();
-        reservation2.setUser(user);
-        reservation2.setCharger(charger);
-
-        reservation2.setStartsAt(Instant.now().minus(1, ChronoUnit.DAYS));
-        reservation2.setEndsAt(Instant.now().plus(2, ChronoUnit.HOURS).minus(1, ChronoUnit.DAYS));
-
-
-        // Reservation is in 2 hours and 30 minutes
-        final Reservation reservation3 = new Reservation();
-        reservation3.setUser(user);
-        reservation3.setCharger(charger);
-
-        reservation3.setStartsAt(Instant.now().plus(2, ChronoUnit.HOURS).plus(30, ChronoUnit.MINUTES));
-        reservation3.setEndsAt(Instant.now().plus(3, ChronoUnit.HOURS));
-
-
-        // Reservation was 2 days ago
-        final Reservation reservation4 = new Reservation();
-        reservation4.setUser(user);
-        reservation4.setCharger(charger);
-
-        reservation4.setStartsAt(Instant.now().minus(2, ChronoUnit.DAYS));
-        reservation4.setEndsAt(Instant.now().plus(2, ChronoUnit.HOURS).minus(1, ChronoUnit.DAYS));
-
-        this.reservationRepository.save(reservation1);
-        this.reservationRepository.save(reservation2);
-        this.reservationRepository.save(reservation3);
-        this.reservationRepository.save(reservation4);
-
-        this.reservationServiceImpl.getUserReservations(this.user);
-        Mockito.verify(this.reservationRepository, Mockito.times(1)).getUserReservations(this.user.getId());
+        this.reservationServiceImpl.getUserReservations(user);
+        Mockito.verify(this.reservationRepository, Mockito.times(1)).getUserReservations(user.getId());
     }
 
 }

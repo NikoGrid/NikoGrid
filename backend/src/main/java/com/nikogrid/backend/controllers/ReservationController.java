@@ -73,7 +73,6 @@ public class ReservationController {
     }
 
     @GetMapping("/")
-    @ResponseStatus(HttpStatus.OK)
     @Operation(responses = { @ApiResponse(responseCode = "200", content = { @Content(mediaType = "application/json",
 			array = @ArraySchema(schema = @Schema(implementation = ReservationListDTO.class))) }) })
     public Stream<ReservationListDTO> getUserReservations(@AuthenticationPrincipal BackendUserDetails userDetails) {
