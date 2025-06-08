@@ -1,16 +1,6 @@
 package com.nikogrid.backend.controllers;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-import static org.assertj.core.api.AssertionsForClassTypes.tuple;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestcontainersConfiguration;
@@ -25,7 +15,6 @@ import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
 import com.nikogrid.backend.repositories.ReservationRepository;
 import com.nikogrid.backend.repositories.UserRepository;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,25 +37,42 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Import(TestcontainersConfiguration.class)
 class ReservationControllerIT {
-    @Autowired private WebApplicationContext context;
+    @Autowired
+    private WebApplicationContext context;
 
     private MockMvc mvc;
 
-    @Autowired private LocationRepository locationRepository;
+    @Autowired
+    private LocationRepository locationRepository;
 
-    @Autowired private ChargerRepository chargerRepository;
+    @Autowired
+    private ChargerRepository chargerRepository;
 
     private User testUser;
-    @Autowired private UserRepository userRepository;
 
-    @Autowired private ReservationRepository reservationRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ReservationRepository reservationRepository;
 
-    @TestBean private Clock clock;
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @TestBean
+    private Clock clock;
 
     static Clock clock() {
         return Clock.fixed(Instant.parse("2024-01-01T12:00:00.000Z"), ZoneId.of("UTC"));
@@ -316,7 +322,8 @@ class ReservationControllerIT {
         final List<ReservationListDTO> body =
                 objectMapper.readValue(
                         res.getResponse().getContentAsString(),
-                        new TypeReference<ArrayList<ReservationListDTO>>() {});
+                        new TypeReference<ArrayList<ReservationListDTO>>() {
+                        });
 
         assertThat(body).hasSize(4);
         assertThat(body.get(0).charger).isEqualTo(charger.getName());

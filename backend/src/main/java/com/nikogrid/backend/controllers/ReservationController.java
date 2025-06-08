@@ -11,16 +11,13 @@ import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.ReservationService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -80,22 +77,8 @@ public class ReservationController {
     }
 
     @GetMapping("/")
-    @Operation(
-            responses = {
-                @ApiResponse(
-                        responseCode = "200",
-                        content = {
-                            @Content(
-                                    mediaType = "application/json",
-                                    array =
-                                            @ArraySchema(
-                                                    schema =
-                                                            @Schema(
-                                                                    implementation =
-                                                                            ReservationListDTO
-                                                                                    .class)))
-                        })
-            })
+    @Operation(responses = @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json",
+            array = @ArraySchema(schema = @Schema(implementation = ReservationListDTO.class)))}))
     public Stream<ReservationListDTO> getUserReservations(
             @AuthenticationPrincipal BackendUserDetails userDetails) {
         return this.reservationService.getUserReservations(userDetails.getUser()).stream()
