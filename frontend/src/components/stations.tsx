@@ -48,17 +48,24 @@ interface StationsProps {
   setId: Dispatch<SetStateAction<number | null>>;
   highlightedId?: number | null;
   showActive: boolean;
+  setIsPending: Dispatch<SetStateAction<boolean>>;
 }
 
 export default function Stations({
   setId,
   highlightedId = null,
   showActive,
+  setIsPending,
 }: StationsProps) {
   const map = useMap();
 
   const [ips, setIps] = useState<InterestPoint[]>([]);
-  const { mutate, data } = $api.useMutation("get", "/api/v1/locations/nearby");
+  const { mutate, data, isPending } = $api.useMutation(
+    "get",
+    "/api/v1/locations/nearby",
+  );
+
+  useEffect(() => setIsPending(isPending), [isPending]);
 
   useEffect(() => {
     if (data === undefined) return;

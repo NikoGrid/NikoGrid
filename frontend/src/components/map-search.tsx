@@ -182,7 +182,7 @@ export default function MapSearch({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button>
+              <Button data-test-id="filters-button">
                 <SlidersHorizontal />
                 <span className="sr-only">Filters</span>
               </Button>
@@ -190,6 +190,7 @@ export default function MapSearch({
             <DropdownMenuContent className="mr-5 p-4">
               <div className="flex gap-4">
                 <Checkbox
+                  data-test-id="filter-active-checkbox"
                   id="active"
                   checked={available}
                   onCheckedChange={() => {
