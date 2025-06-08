@@ -103,6 +103,24 @@ class ReservationControllerIT {
         this.userRepository.deleteAll();
     }
 
+
+    Charger makeCharger(boolean isAvailable) {
+        final Location location = new Location();
+        location.setName("Test location");
+        location.setLon(20.0f);
+        location.setLat(30.0f);
+
+        this.locationRepository.save(location);
+
+        final Charger charger = new Charger();
+        charger.setName("AAA1");
+        charger.setAvailable(isAvailable);
+        charger.setMaxPower(22.2F);
+        charger.setLocation(location);
+
+        return this.chargerRepository.save(charger);
+    }
+
     @Test
     @Requirement("NIK-12")
     void createReservationNoAuthentication() throws Exception {
@@ -143,20 +161,7 @@ class ReservationControllerIT {
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
     void createReservationChargerNotAvailable() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(false);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(false);
 
         final CreateReservation req =
                 new CreateReservation(
@@ -177,20 +182,7 @@ class ReservationControllerIT {
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
     void createReservationOverlap() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(true);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(true);
 
         final Reservation reservation = new Reservation();
         reservation.setUser(this.testUser);
@@ -219,20 +211,7 @@ class ReservationControllerIT {
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
     void createReservationOk() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(true);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(true);
 
         final CreateReservation req =
                 new CreateReservation(
@@ -275,20 +254,7 @@ class ReservationControllerIT {
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
     void getReservationOk() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(true);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(true);
 
         final Reservation reservation1 = new Reservation();
         reservation1.setUser(this.testUser);
@@ -334,7 +300,7 @@ class ReservationControllerIT {
         assertThat(body).hasSize(4);
         assertThat(body.get(0).charger).isEqualTo(charger.getName());
         assertThat(body.get(0).maxPower).isEqualTo(charger.getMaxPower());
-        assertThat(body.get(0).location).isEqualTo(location.getName());
+        assertThat(body.get(0).location).isEqualTo(charger.getLocation().getName());
         assertThat(body.get(0).start)
                 .isCloseTo(reservation1.getStartsAt(), within(1, ChronoUnit.SECONDS));
         assertThat(body.get(0).end)
@@ -356,20 +322,7 @@ class ReservationControllerIT {
     @Test
     @Requirement("NIK-25")
     void cancelReservationNoAuthentication() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(true);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(true);
 
         Reservation reservation = new Reservation();
         reservation.setUser(this.testUser);
@@ -387,20 +340,7 @@ class ReservationControllerIT {
     @WithUserDetails(value = "other@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-25")
     void cancelReservationNotOwner() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(true);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(true);
 
         Reservation reservation = new Reservation();
         reservation.setUser(this.testUser);
@@ -418,20 +358,7 @@ class ReservationControllerIT {
     @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-25")
     void cancelReservationOk() throws Exception {
-        final Location location = new Location();
-        location.setName("Test location");
-        location.setLon(20.0f);
-        location.setLat(30.0f);
-
-        this.locationRepository.save(location);
-
-        final Charger charger = new Charger();
-        charger.setName("AAA1");
-        charger.setAvailable(true);
-        charger.setMaxPower(22.2F);
-        charger.setLocation(location);
-
-        this.chargerRepository.save(charger);
+        final var charger = makeCharger(true);
 
         Reservation reservation = new Reservation();
         reservation.setUser(this.testUser);
