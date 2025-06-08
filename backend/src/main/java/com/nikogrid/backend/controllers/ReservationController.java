@@ -11,13 +11,16 @@ import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.ReservationService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,7 +48,8 @@ public class ReservationController {
     private final Clock clock;
 
     @Autowired
-    public ReservationController(ReservationService reservationService, ChargerService chargerService, Clock clock) {
+    public ReservationController(
+            ReservationService reservationService, ChargerService chargerService, Clock clock) {
         this.reservationService = reservationService;
         this.chargerService = chargerService;
         this.clock = clock;
@@ -53,10 +57,13 @@ public class ReservationController {
 
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReservationDTO createLocation(@Valid @RequestBody CreateReservation req, @AuthenticationPrincipal BackendUserDetails userDetails)
+    public ReservationDTO createLocation(
+            @Valid @RequestBody CreateReservation req,
+            @AuthenticationPrincipal BackendUserDetails userDetails)
             throws ResourceNotFound, ChargerUnavailable, ReservationConflict {
         if (req.start.isBefore(Instant.now(clock)))
-            throw new ConstraintViolationException("Reservation must start in the future", Set.of());
+            throw new ConstraintViolationException(
+                    "Reservation must start in the future", Set.of());
 
         if (!req.end.isAfter(req.start))
             throw new ConstraintViolationException("Reservation end must be after start", Set.of());
@@ -73,9 +80,25 @@ public class ReservationController {
     }
 
     @GetMapping("/")
-    @Operation(responses = { @ApiResponse(responseCode = "200", content = { @Content(mediaType = "application/json",
-			array = @ArraySchema(schema = @Schema(implementation = ReservationListDTO.class))) }) })
-    public Stream<ReservationListDTO> getUserReservations(@AuthenticationPrincipal BackendUserDetails userDetails) {
-        return this.reservationService.getUserReservations(userDetails.getUser()).stream().map(ReservationListDTO::fromReservation);
+    @Operation(
+            responses = {
+                @ApiResponse(
+                        responseCode = "200",
+                        content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array =
+                                            @ArraySchema(
+                                                    schema =
+                                                            @Schema(
+                                                                    implementation =
+                                                                            ReservationListDTO
+                                                                                    .class)))
+                        })
+            })
+    public Stream<ReservationListDTO> getUserReservations(
+            @AuthenticationPrincipal BackendUserDetails userDetails) {
+        return this.reservationService.getUserReservations(userDetails.getUser()).stream()
+                .map(ReservationListDTO::fromReservation);
     }
 }

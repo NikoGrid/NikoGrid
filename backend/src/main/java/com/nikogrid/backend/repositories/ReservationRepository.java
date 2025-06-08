@@ -1,6 +1,7 @@
 package com.nikogrid.backend.repositories;
 
 import com.nikogrid.backend.entities.Reservation;
+
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,8 @@ import java.util.UUID;
 
 @Repository
 public interface ReservationRepository extends CrudRepository<Reservation, Long> {
-    @NativeQuery("""
+    @NativeQuery(
+            """
             SELECT *
             FROM reservation r
             WHERE

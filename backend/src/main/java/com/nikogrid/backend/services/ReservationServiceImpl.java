@@ -5,6 +5,7 @@ import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ChargerUnavailable;
 import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.repositories.ReservationRepository;
+
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -25,28 +25,25 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public Reservation create(Reservation reservation) throws ChargerUnavailable, ReservationConflict {
-        if (!reservation.getCharger().isAvailable())
-            throw new ChargerUnavailable();
+    public Reservation create(Reservation reservation)
+            throws ChargerUnavailable, ReservationConflict {
+        if (!reservation.getCharger().isAvailable()) throw new ChargerUnavailable();
 
         try {
             return this.reservationRepository.save(reservation);
         } catch (DataIntegrityViolationException exc) {
-            if (isReservationOverlapViolation(exc))
-                throw new ReservationConflict();
+            if (isReservationOverlapViolation(exc)) throw new ReservationConflict();
 
             throw exc;
         }
     }
 
     private boolean isReservationOverlapViolation(DataIntegrityViolationException e) {
-        if (!(e.getRootCause() instanceof PSQLException psqlException))
-            return false;
+        if (!(e.getRootCause() instanceof PSQLException psqlException)) return false;
 
         final ServerErrorMessage serverErrorMessage = psqlException.getServerErrorMessage();
 
-        if (serverErrorMessage == null)
-            return false;
+        if (serverErrorMessage == null) return false;
 
         return Objects.equals(serverErrorMessage.getConstraint(), "ec_working_hours_overlap");
     }

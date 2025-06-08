@@ -1,5 +1,8 @@
 package com.nikogrid.backend.steps;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.entities.Reservation;
@@ -7,11 +10,13 @@ import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
 import com.nikogrid.backend.repositories.ReservationRepository;
 import com.nikogrid.backend.repositories.UserRepository;
+
 import io.cucumber.java.DataTableType;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+
 import org.openqa.selenium.By;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -22,27 +27,22 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
-
 public class ReservationSteps {
-    @Autowired
-    private UserRepository userRepository;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private ChargerRepository chargerRepository;
+    @Autowired private ChargerRepository chargerRepository;
 
-    @Autowired
-    private ReservationRepository reservationRepository;
+    @Autowired private ReservationRepository reservationRepository;
 
-    @Autowired
-    private LocationRepository locationRepository;
+    @Autowired private LocationRepository locationRepository;
 
     @DataTableType
     public Reservation dateEntry(Map<String, String> entry) {
         final var reservation = new Reservation();
-        reservation.setStartsAt(Instant.now().plus(Long.parseLong(entry.get("startsAt")), ChronoUnit.HOURS));
-        reservation.setEndsAt(Instant.now().plus(Long.parseLong(entry.get("endsAt")), ChronoUnit.HOURS));
+        reservation.setStartsAt(
+                Instant.now().plus(Long.parseLong(entry.get("startsAt")), ChronoUnit.HOURS));
+        reservation.setEndsAt(
+                Instant.now().plus(Long.parseLong(entry.get("endsAt")), ChronoUnit.HOURS));
 
         return reservation;
     }
@@ -80,15 +80,12 @@ public class ReservationSteps {
 
         final var submitButton = DriverInstance.waitFindByTestId("book-submit");
 
-        final LocalDateTime start = LocalDateTime.now()
-                .plusDays(1)
-                .toLocalDate().atTime(12, 0);
+        final LocalDateTime start = LocalDateTime.now().plusDays(1).toLocalDate().atTime(12, 0);
 
         final LocalDateTime end = start.plusHours(hours);
 
         startInput.sendKeys(start.toString());
         endInput.sendKeys(end.toString());
-
 
         submitButton.click();
     }
@@ -135,8 +132,12 @@ public class ReservationSteps {
         final var cards = DriverInstance.waitFindByTestGroup("reservation-card");
         final var card = cards.get(cardIdx - 1);
         var selector = By.cssSelector("[data-test-id='reservation-start-instant']");
-        final var instant = LocalDateTime.parse(card.findElement(selector).getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm"));
-        assertThat(instant).isCloseTo(LocalDateTime.now().plusHours(instantOffset), within(1, ChronoUnit.HOURS));
-
+        final var instant =
+                LocalDateTime.parse(
+                        card.findElement(selector).getText(),
+                        DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm"));
+        assertThat(instant)
+                .isCloseTo(
+                        LocalDateTime.now().plusHours(instantOffset), within(1, ChronoUnit.HOURS));
     }
 }

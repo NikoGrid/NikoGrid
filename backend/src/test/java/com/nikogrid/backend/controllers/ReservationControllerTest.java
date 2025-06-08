@@ -1,7 +1,13 @@
 package com.nikogrid.backend.controllers;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestSecurityBeans;
 import com.nikogrid.backend.auth.SecurityConfig;
@@ -15,6 +21,7 @@ import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.ReservationService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -40,49 +47,31 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(ReservationController.class)
 @ActiveProfiles("test")
 @Import({SecurityConfig.class, TestSecurityBeans.class})
 class ReservationControllerTest {
-    @Autowired
-    private WebApplicationContext context;
+    @Autowired private WebApplicationContext context;
 
     private MockMvc mvc;
 
-    @MockitoBean
-    private ChargerService chargerService;
+    @MockitoBean private ChargerService chargerService;
 
-    @MockitoBean
-    private ReservationService reservationService;
+    @MockitoBean private ReservationService reservationService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Autowired private ObjectMapper objectMapper;
 
-    @TestBean
-    private Clock clock;
+    @TestBean private Clock clock;
 
-    @MockitoBean
-    private UserDetailsService userDetailsService;
+    @MockitoBean private UserDetailsService userDetailsService;
 
     static Clock clock() {
-        return Clock.fixed(
-                Instant.parse("2024-01-01T12:00:00.000Z"),
-                ZoneId.of("UTC")
-        );
+        return Clock.fixed(Instant.parse("2024-01-01T12:00:00.000Z"), ZoneId.of("UTC"));
     }
 
     @BeforeEach
     void setup() {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
+        mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
 
         final User user = new User();
         user.setEmail("test@test.com");
@@ -96,38 +85,39 @@ class ReservationControllerTest {
     @Test
     @Requirement("NIK-12")
     void createReservationNoAuth() throws Exception {
-        final CreateReservation req = new CreateReservation(
-                1L,
-                OffsetDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
-                OffsetDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
-        );
+        final CreateReservation req =
+                new CreateReservation(
+                        1L,
+                        OffsetDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
+                        OffsetDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant());
 
-        mvc.perform(post("/api/v1/reservations/")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isUnauthorized());
     }
 
     @ParameterizedTest
     @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
-    @CsvSource(textBlock = """
-            # Start, End
-            # End before start
-            2024-01-01T23:00:00+00:00,2024-01-01T22:00:00+00:00
-            # Start before now
-            2023-12-31T22:00:00+00:00,2024-01-01T22:00:00+00:00
-            """)
+    @CsvSource(
+            textBlock =
+                    """
+                    # Start, End
+                    # End before start
+                    2024-01-01T23:00:00+00:00,2024-01-01T22:00:00+00:00
+                    # Start before now
+                    2023-12-31T22:00:00+00:00,2024-01-01T22:00:00+00:00
+                    """)
     void createReservationBadRequest(String start, String end) throws Exception {
-        final CreateReservation req = new CreateReservation(
-                1L,
-                Instant.parse(start),
-                Instant.parse(end)
-        );
+        final CreateReservation req =
+                new CreateReservation(1L, Instant.parse(start), Instant.parse(end));
 
-        mvc.perform(post("/api/v1/reservations/")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
 
@@ -138,17 +128,19 @@ class ReservationControllerTest {
     @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-12")
     void createReservationNoCharger() throws Exception {
-        final CreateReservation req = new CreateReservation(
-                1L,
-                Instant.parse("2024-01-01T22:00:00.000+00:00"),
-                Instant.parse("2024-01-01T23:00:00.000+00:00")
-        );
+        final CreateReservation req =
+                new CreateReservation(
+                        1L,
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        Mockito.when(chargerService.findChargerById(Mockito.anyLong())).thenThrow(new ResourceNotFound());
+        Mockito.when(chargerService.findChargerById(Mockito.anyLong()))
+                .thenThrow(new ResourceNotFound());
 
-        mvc.perform(post("/api/v1/reservations/")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
 
@@ -173,28 +165,26 @@ class ReservationControllerTest {
         charger.setLocation(location);
 
         Mockito.when(chargerService.findChargerById(Mockito.anyLong())).thenReturn(charger);
-        Mockito.when(reservationService.create(Mockito.any())).thenAnswer(i -> {
-            final Reservation r = i.getArgument(0);
-            r.setId(1L);
-            return r;
-        });
+        Mockito.when(reservationService.create(Mockito.any()))
+                .thenAnswer(
+                        i -> {
+                            final Reservation r = i.getArgument(0);
+                            r.setId(1L);
+                            return r;
+                        });
 
-        final CreateReservation req = new CreateReservation(
-                1L,
-                Instant.parse("2024-01-01T22:00:00.000+00:00"),
-                Instant.parse("2024-01-01T23:00:00.000+00:00")
-        );
+        final CreateReservation req =
+                new CreateReservation(
+                        1L,
+                        Instant.parse("2024-01-01T22:00:00.000+00:00"),
+                        Instant.parse("2024-01-01T23:00:00.000+00:00"));
 
-        final ReservationDTO expected = new ReservationDTO(
-                1L,
-                1L,
-                req.start,
-                req.end
-        );
+        final ReservationDTO expected = new ReservationDTO(1L, 1L, req.start, req.end);
 
-        mvc.perform(post("/api/v1/reservations/")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
+        mvc.perform(
+                        post("/api/v1/reservations/")
+                                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                                .content(objectMapper.writeValueAsString(req)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(content().json(objectMapper.writeValueAsString(expected)));
@@ -212,7 +202,9 @@ class ReservationControllerTest {
     @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-13")
     void getReservations() throws Exception {
-        mvc.perform(get("/api/v1/reservations/")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
+        mvc.perform(get("/api/v1/reservations/"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE));
         Mockito.verify(reservationService, Mockito.times(1)).getUserReservations(Mockito.any());
     }
 }
