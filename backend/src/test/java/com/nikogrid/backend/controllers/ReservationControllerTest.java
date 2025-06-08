@@ -1,13 +1,6 @@
 package com.nikogrid.backend.controllers;
 
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestSecurityBeans;
 import com.nikogrid.backend.auth.SecurityConfig;
@@ -21,7 +14,6 @@ import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.ReservationService;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -47,23 +39,35 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @WebMvcTest(ReservationController.class)
 @ActiveProfiles("test")
 @Import({SecurityConfig.class, TestSecurityBeans.class})
 class ReservationControllerTest {
-    @Autowired private WebApplicationContext context;
+    @Autowired
+    private WebApplicationContext context;
 
     private MockMvc mvc;
 
-    @MockitoBean private ChargerService chargerService;
+    @MockitoBean
+    private ChargerService chargerService;
 
-    @MockitoBean private ReservationService reservationService;
+    @MockitoBean
+    private ReservationService reservationService;
 
-    @Autowired private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @TestBean private Clock clock;
+    @TestBean
+    private Clock clock;
 
-    @MockitoBean private UserDetailsService userDetailsService;
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     static Clock clock() {
         return Clock.fixed(Instant.parse("2024-01-01T12:00:00.000Z"), ZoneId.of("UTC"));
@@ -104,12 +108,12 @@ class ReservationControllerTest {
     @CsvSource(
             textBlock =
                     """
-                    # Start, End
-                    # End before start
-                    2024-01-01T23:00:00+00:00,2024-01-01T22:00:00+00:00
-                    # Start before now
-                    2023-12-31T22:00:00+00:00,2024-01-01T22:00:00+00:00
-                    """)
+                            # Start, End
+                            # End before start
+                            2024-01-01T23:00:00+00:00,2024-01-01T22:00:00+00:00
+                            # Start before now
+                            2023-12-31T22:00:00+00:00,2024-01-01T22:00:00+00:00
+                            """)
     void createReservationBadRequest(String start, String end) throws Exception {
         final CreateReservation req =
                 new CreateReservation(1L, Instant.parse(start), Instant.parse(end));

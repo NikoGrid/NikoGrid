@@ -5,7 +5,6 @@ import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ChargerUnavailable;
 import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.repositories.ReservationRepository;
-
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.ServerErrorMessage;
 import org.springframework.beans.factory.annotation.Autowired;

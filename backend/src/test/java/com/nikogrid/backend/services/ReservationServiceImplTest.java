@@ -1,9 +1,6 @@
 package com.nikogrid.backend.services;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
-
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.entities.Reservation;
@@ -11,7 +8,6 @@ import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ChargerUnavailable;
 import com.nikogrid.backend.exceptions.ReservationConflict;
 import com.nikogrid.backend.repositories.ReservationRepository;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,12 +18,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceImplTest {
 
-    @Mock private ReservationRepository reservationRepository;
+    @Mock
+    private ReservationRepository reservationRepository;
 
-    @InjectMocks private ReservationServiceImpl reservationServiceImpl;
+    @InjectMocks
+    private ReservationServiceImpl reservationServiceImpl;
 
     private Charger charger;
     private User user;
