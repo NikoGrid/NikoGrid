@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,6 +66,13 @@ public class StationDiscoverySteps {
         location.setLat(Float.parseFloat(lat));
         location.setLon(Float.parseFloat(lon));
 
+        final var availability = entry.get("availability");
+        if (availability == null) return location;
+
+        final var charger = new Charger();
+        charger.setAvailable("FREE".equals(availability));
+
+        location.setChargers(Set.of(charger));
         return location;
     }
 
@@ -79,7 +87,17 @@ public class StationDiscoverySteps {
     @Given("the following charging stations exist:")
     public void theFollowingChargingStationsExist(List<Location> locations) {
         locationRepository.saveAll(locations);
-        chargerRepository.saveAll(locations.stream().map(this::createChargerOnLocation).toList());
+        for (var location : locations) {
+            if (location.getChargers() == null) {
+                chargerRepository.save(createChargerOnLocation(location));
+                continue;
+            }
+            for (var charger : location.getChargers()) {
+                charger.setLocation(location);
+                charger.setName(location.getName());
+                chargerRepository.save(charger);
+            }
+        }
     }
 
     @When("I open the application")
@@ -221,5 +239,22 @@ public class StationDiscoverySteps {
         var item = DriverInstance.getDriver().findElement(selector);
 
         item.click();
+    }
+
+    @And("I filter for stations with availability FREE")
+    public void iFilterForStationsWithAvailabilityFREE() {
+        final var filtersButton = DriverInstance.waitFindByTestId("filters-button");
+        filtersButton.click();
+
+        final var filterActiveCheckbox = DriverInstance.waitFindByTestId("filter-active-checkbox");
+        filterActiveCheckbox.click();
+
+        final var htmlSelector = By.cssSelector("html");
+        DriverInstance.getDriver().findElement(htmlSelector).click();
+
+
+        final var loadingSelector = By.cssSelector("[data-test-loading]");
+        var wait = new WebDriverWait(DriverInstance.getDriver(), Duration.ofSeconds(2));
+        wait.until(d -> Objects.equals(d.findElement(loadingSelector).getDomAttribute("data-test-loading"), "false"));
     }
 }

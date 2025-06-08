@@ -22,6 +22,7 @@ function RouteComponent() {
   const [stationId, setStationId] = useState<number | null>(null);
   const [showActive, setShowActive] = useState<boolean>(false);
   const [higlightedId, setHighlightedId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const mapRef = useRef<ComponentRef<typeof MapContainer>>(null);
 
@@ -37,7 +38,11 @@ function RouteComponent() {
         stationId={stationId}
         setStationId={setStationId}
       />
-      <main className="relative flex grow flex-col" data-test-id="home-page">
+      <main
+        className="relative flex grow flex-col"
+        data-test-id="home-page"
+        data-test-loading={isLoading}
+      >
         <span className="sr-only">Map</span>
         <MapContainer
           ref={mapRef}
@@ -51,6 +56,7 @@ function RouteComponent() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Stations
+            setIsPending={setIsLoading}
             setId={setStationId}
             highlightedId={higlightedId}
             showActive={showActive}
