@@ -3,7 +3,6 @@ package com.nikogrid.backend.steps;
 import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.entities.Reservation;
-import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.repositories.ChargerRepository;
 import com.nikogrid.backend.repositories.LocationRepository;
 import com.nikogrid.backend.repositories.ReservationRepository;
@@ -15,8 +14,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -33,9 +30,6 @@ public class ReservationSteps {
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private ChargerRepository chargerRepository;
 
     @Autowired
@@ -43,11 +37,6 @@ public class ReservationSteps {
 
     @Autowired
     private LocationRepository locationRepository;
-
-    @Value("${frontend.base-url}")
-    private String baseUrl;
-
-    private User user;
 
     @DataTableType
     public Reservation dateEntry(Map<String, String> entry) {
@@ -60,13 +49,7 @@ public class ReservationSteps {
 
     @And("I am authenticated")
     public void iAmAuthenticated() {
-        this.user = new User();
-        this.user.setEmail("test@test.com");
-        this.user.setPassword(passwordEncoder.encode("password"));
-        this.user.setAdmin(false);
-
-        this.userRepository.save(user);
-
+        final var user = this.userRepository.findByEmail("test@test.com").orElseThrow();
         final var loginLink = DriverInstance.waitFindByTestId("login-link");
         loginLink.click();
 
@@ -117,6 +100,7 @@ public class ReservationSteps {
 
     @Given("the following reservations are booked:")
     public void createReservations(List<Reservation> reservations) {
+        final var user = this.userRepository.findByEmail("test@test.com").orElseThrow();
         final var location = new Location();
         location.setName("AAA1");
         location.setLat(0);
@@ -128,7 +112,7 @@ public class ReservationSteps {
         charger.setLocation(location);
         this.chargerRepository.save(charger);
         for (Reservation res : reservations) {
-            res.setUser(this.user);
+            res.setUser(user);
             res.setCharger(charger);
             this.reservationRepository.save(res);
         }
@@ -136,13 +120,14 @@ public class ReservationSteps {
 
     @When("I go to my profile")
     public void iGoToMyProfile() {
-        DriverInstance.getDriver().get(baseUrl + "/profile");
+        DriverInstance.waitFindByTestId("profile-menu-trigger").click();
+        DriverInstance.waitFindByTestId("go-to-profile").click();
     }
 
     @Then("I should see {int} reservations")
     public void countReservations(int numReservations) {
         final var cards = DriverInstance.waitFindByTestGroup("reservation-card");
-        assert (cards.size() == numReservations);
+        assertThat(cards).hasSize(numReservations);
     }
 
     @Then("reservation {int} starts at {int}")
@@ -151,7 +136,7 @@ public class ReservationSteps {
         final var card = cards.get(cardIdx - 1);
         var selector = By.cssSelector("[data-test-id='reservation-start-instant']");
         final var instant = LocalDateTime.parse(card.findElement(selector).getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm"));
-        assertThat(instant).isCloseTo(LocalDateTime.now().plus(instantOffset, ChronoUnit.HOURS), within(1, ChronoUnit.HOURS));
+        assertThat(instant).isCloseTo(LocalDateTime.now().plusHours(instantOffset), within(1, ChronoUnit.HOURS));
 
     }
 }

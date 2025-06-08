@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ChargerRepository extends CrudRepository<Charger, Long> {
-    Charger getChargerById(int i);
 }

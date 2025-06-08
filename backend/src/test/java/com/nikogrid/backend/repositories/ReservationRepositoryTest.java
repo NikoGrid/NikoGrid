@@ -199,7 +199,7 @@ class ReservationRepositoryTest {
 
         this.entityManager.persistAndFlush(reservation4);
 
-        // The reservations must come byb whichever is closest to the present date, but the future reservations come before the past reservations
+        // The reservations must come by whichever is closest to the present date, but the future reservations come before the past reservations
         assertThat(this.reservationRepository.getUserReservations(user.getId())).containsExactly(reservation1, reservation3, reservation2, reservation4);
     }
 }
