@@ -4,7 +4,9 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestcontainersConfiguration;
+import com.nikogrid.backend.dto.ChargerDTO;
 import com.nikogrid.backend.dto.ClusterInterestPoint;
+import com.nikogrid.backend.dto.CreateCharger;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
@@ -60,15 +62,19 @@ class LocationControllerIT {
 
     @BeforeEach
     void setup() {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .apply(springSecurity())
-                .build();
+        mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+
+        final User admin = new User();
+        admin.setEmail("admin@test.com");
+        admin.setPassword("password");
+        admin.setAdmin(true);
+
+        this.userRepository.save(admin);
 
         final User user = new User();
-        user.setEmail("admin@test.com");
+        user.setEmail("user@test.com");
         user.setPassword("password");
-        user.setAdmin(true);
+        user.setAdmin(false);
 
         this.userRepository.save(user);
     }
@@ -84,11 +90,7 @@ class LocationControllerIT {
     @WithUserDetails(value = "admin@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Requirement("NIK-20")
     void createLocationOk() throws Exception {
-        final CreateLocation req = new CreateLocation(
-                "Test",
-                30.0f,
-                20.0f
-        );
+        final CreateLocation req = new CreateLocation("Test", 30.0f, 20.0f);
 
         final MvcResult res = mvc.perform(post("/api/v1/locations/")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -97,17 +99,28 @@ class LocationControllerIT {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
 
-        final LocationDTO body =
-                objectMapper.readValue(res.getResponse().getContentAsString(), LocationDTO.class);
+        final LocationDTO body = objectMapper.readValue(res.getResponse().getContentAsString(), LocationDTO.class);
 
         assertThat(body.getName()).isEqualTo(req.name);
         assertThat(body.getLat()).isEqualTo(req.lat);
         assertThat(body.getLon()).isEqualTo(req.lon);
 
-        assertThat(this.locationRepository.findAll())
-                .hasSize(1)
-                .extracting(Location::getId)
-                .containsExactlyInAnyOrder(body.id);
+        assertThat(this.locationRepository.findAll()).hasSize(1).extracting(Location::getId).containsExactlyInAnyOrder(body.id);
+    }
+
+    @Test
+    @WithUserDetails(value = "user@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Requirement("NIK-20")
+    void createLocationNoAuthz() throws Exception {
+        final CreateLocation req = new CreateLocation("Test", 30.0f, 20.0f);
+
+        mvc.perform(post("/api/v1/locations/")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isForbidden())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+        assertThat(this.locationRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -115,36 +128,14 @@ class LocationControllerIT {
     void getNearbyLocationsOk() throws Exception {
         final Location noCluster = createTestLocation("Test3", 15, 15);
 
-        this.locationRepository.saveAll(List.of(
-                createTestLocation("Test1", -10, 5),
-                createTestLocation("Test2", -11, 5),
-                noCluster,
-                createTestLocation("Test4", -30, 10)
-        ));
+        this.locationRepository.saveAll(List.of(createTestLocation("Test1", -10, 5), createTestLocation("Test2", -11, 5), noCluster, createTestLocation("Test4", -30, 10)));
 
-        final MvcResult res = mvc.perform(get("/api/v1/locations/nearby")
-                        .param("w", "-20")
-                        .param("e", "20")
-                        .param("s", "-20")
-                        .param("n", "20")
-                        .param("z", "0"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andReturn();
+        final MvcResult res = mvc.perform(get("/api/v1/locations/nearby").param("w", "-20").param("e", "20").param("s", "-20").param("n", "20").param("z", "0")).andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE)).andReturn();
 
-        final List<InterestPointBaseDTO> body = objectMapper.readValue(
-                res.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                }
-        );
+        final List<InterestPointBaseDTO> body = objectMapper.readValue(res.getResponse().getContentAsString(), new TypeReference<>() {
+        });
 
-        assertThat(body)
-                .isNotEmpty()
-                .hasSize(2)
-                .containsExactlyInAnyOrder(
-                        new ClusterInterestPoint(-10.5f, 5, 2),
-                        new LocationInterestPoint(15, 15, noCluster.getId(), "Test3")
-                );
+        assertThat(body).isNotEmpty().hasSize(2).containsExactlyInAnyOrder(new ClusterInterestPoint(-10.5f, 5, 2), new LocationInterestPoint(15, 15, noCluster.getId(), "Test3"));
     }
 
     @Test
@@ -153,20 +144,11 @@ class LocationControllerIT {
         final Location closestNoChargers = createTestLocation("Test1", 1, 0);
         final Location closestNoAvailable = createTestLocation("Test1", 0, 1);
 
-        this.locationRepository.saveAll(List.of(
-                closestNoChargers,
-                closestNoAvailable
-        ));
+        this.locationRepository.saveAll(List.of(closestNoChargers, closestNoAvailable));
 
-        this.chargerRepository.saveAll(List.of(
-                createTestCharger(closestNoAvailable, "E1", false)
-        ));
+        this.chargerRepository.saveAll(List.of(createTestCharger(closestNoAvailable, "E1", false)));
 
-        mvc.perform(get("/api/v1/locations/closest")
-                        .param("lat", "0")
-                        .param("lon", "0"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+        mvc.perform(get("/api/v1/locations/closest").param("lat", "0").param("lon", "0")).andExpect(status().isNotFound()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
     }
 
     @Test
@@ -177,29 +159,18 @@ class LocationControllerIT {
         final Location closestAvailable = createTestLocation("Test1", 2, 3);
         final Location furthestAvailable = createTestLocation("Test1", 5, 5);
 
-        this.locationRepository.saveAll(List.of(
-                closestNoChargers,
-                closestNoAvailable,
-                closestAvailable,
-                furthestAvailable
-        ));
+        this.locationRepository.saveAll(List.of(closestNoChargers, closestNoAvailable, closestAvailable, furthestAvailable));
 
-        this.chargerRepository.saveAll(List.of(
-                createTestCharger(closestNoAvailable, "E1", false),
-                createTestCharger(closestAvailable, "E2", false),
-                createTestCharger(closestAvailable, "E3", true),
-                createTestCharger(furthestAvailable, "E4", false)
-        ));
+        this.chargerRepository.saveAll(List.of(createTestCharger(closestNoAvailable, "E1", false), createTestCharger(closestAvailable, "E2", false), createTestCharger(closestAvailable, "E3", true), createTestCharger(furthestAvailable, "E4", false)));
 
         final MvcResult res = mvc.perform(get("/api/v1/locations/closest")
-                        .param("lat", "0")
-                        .param("lon", "0"))
+                    .param("lat", "0")
+                    .param("lon", "0"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andReturn();
 
-        final LocationDTO body =
-                objectMapper.readValue(res.getResponse().getContentAsString(), LocationDTO.class);
+        final LocationDTO body = objectMapper.readValue(res.getResponse().getContentAsString(), LocationDTO.class);
 
         assertThat(body.getId()).isEqualTo(closestAvailable.getId());
         assertThat(body.getName()).isEqualTo(closestAvailable.getName());

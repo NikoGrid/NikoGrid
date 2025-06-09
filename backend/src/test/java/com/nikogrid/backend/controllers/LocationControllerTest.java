@@ -4,15 +4,19 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestSecurityBeans;
 import com.nikogrid.backend.auth.SecurityConfig;
+import com.nikogrid.backend.dto.ChargerDTO;
 import com.nikogrid.backend.dto.ClusterInterestPoint;
+import com.nikogrid.backend.dto.CreateCharger;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
 import com.nikogrid.backend.entities.BackendUserDetails;
+import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
+import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.LocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +56,9 @@ class LocationControllerTest {
 
     @MockitoBean
     private LocationService locationService;
+
+    @MockitoBean
+    private ChargerService chargerService;
 
     @Autowired
     private ObjectMapper objectMapper;
