@@ -10,19 +10,19 @@ spec:
   project: nikogrid
   source:
     repoURL: https://github.com/NikoGrid/NikoGrid.git
-    targetRevision: v0.1.0
+    targetRevision: v1.0.0
     path: infra/chart
     helm:
       valuesObject:
         backend:
           image:
-            tag: 0.1.0
+            tag: 1.0.0
           nodeSelector:
             beta.kubernetes.io/arch: amd64
 
         frontend:
           image:
-            tag: 0.1.0
+            tag: 1.0.0
           nodeSelector:
             beta.kubernetes.io/arch: amd64
 
