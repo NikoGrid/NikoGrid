@@ -120,7 +120,7 @@ class LocationControllerIT {
                 .andExpect(status().isForbidden())
                 .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
 
-        assertThat(this.locationRepository.findAll()).hasSize(0);
+        assertThat(this.locationRepository.findAll()).isEmpty();
     }
 
     @Test
@@ -222,7 +222,7 @@ class LocationControllerIT {
         final ChargerDTO body = objectMapper.readValue(res.getResponse().getContentAsString(), ChargerDTO.class);
         assertThat(body.name).isEqualTo(req.name);
         assertThat(body.maxPower).isEqualTo(req.maxPower);
-        assertThat(body.isAvailable).isEqualTo(req.available);
+        assertThat(body.isAvailable).isEqualTo(req.isAvailable());
 
         assertThat(this.chargerRepository.findAll())
                 .hasSize(1)

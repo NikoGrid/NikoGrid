@@ -6,6 +6,7 @@ import com.nikogrid.backend.TestcontainersConfiguration;
 import com.nikogrid.backend.auth.JwtGenerator;
 import com.nikogrid.backend.auth.SecurityConstants;
 import com.nikogrid.backend.dto.LoginDTO;
+import com.nikogrid.backend.dto.UserDTO;
 import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.repositories.UserRepository;
 import jakarta.servlet.http.Cookie;
@@ -17,6 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -58,6 +61,12 @@ class AuthenticationControllerIT {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+
+        final User user = new User();
+        user.setEmail("test@test.com");
+        user.setPassword("password");
+        user.setAdmin(true);
+        this.userRepository.save(user);
     }
 
     @AfterEach
@@ -241,5 +250,18 @@ class AuthenticationControllerIT {
         mvc.perform(get("/api/v1/auth/logout"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(cookie().doesNotExist(SecurityConstants.AUTH_COOKIE));
+    }
+
+    @Test
+    @Requirement("NIK-42")
+    @WithUserDetails(value = "test@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    void getUserProfile() throws Exception {
+        final var profile = mvc.perform(get("/api/v1/auth/me"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        final UserDTO body = objectMapper.readValue(profile.getResponse().getContentAsString(), UserDTO.class);
+        assertThat(body.isAdmin()).isTrue();
+        assertThat(body.getEmail()).isEqualTo("test@test.com");
     }
 }

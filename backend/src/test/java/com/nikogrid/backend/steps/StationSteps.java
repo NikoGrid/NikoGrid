@@ -19,7 +19,7 @@ public class StationSteps {
     private PasswordEncoder passwordEncoder;
 
     @Given("I have the admin account")
-    public void iHaveTheAdminAccountWithEmailAndPassword() {
+    public void iHaveTheAdminAccount() {
         final var user = new User();
         user.setEmail("admin@test.com");
         user.setPassword(passwordEncoder.encode("password"));
@@ -42,8 +42,8 @@ public class StationSteps {
         submitButton.click();
     }
 
-    @When("I click the button to create a new station")
-    public void iClickTheButtonToCreateANewStation() {
+    @When("I click the button to create a new location")
+    public void iClickTheButtonToCreateANewLocation() {
         DriverInstance.waitFindByTestId("create-location-button").click();
     }
 
@@ -58,7 +58,37 @@ public class StationSteps {
         DriverInstance.waitFindByTestId("location-name-input").sendKeys(name);
         DriverInstance.waitFindByTestId("location-latitude-input").sendKeys(Integer.toString(latitude));
         DriverInstance.waitFindByTestId("location-longitude-input").sendKeys(Integer.toString(longitude));
+    }
+
+    @Then("when I submit the form to create a location")
+    public void submitLocationForm() {
         DriverInstance.waitFindByTestId("create-location-submit").click();
+    }
+
+    @When("I click the button to create a new station")
+    public void createStationButton() {
+        DriverInstance.waitFindByTestId("create-charger-button").click();
+    }
+    @Then("I see a station creation form")
+    public void getStationCreationForm(){
+        final var form = DriverInstance.waitFindByTestId("create-charger-form");
+        assertThat(form).isNotNull();
+    }
+    @Then("when I input the name {string} and the power {int}")
+    public void fillStationCreationForm(String name, Integer power){
+        DriverInstance.waitFindByTestId("charger-name-input").sendKeys(name);
+        DriverInstance.waitFindByTestId("charger-power-input").sendKeys(Integer.toString(power));
+
+    }
+
+    @Then("when I submit the form to create a station")
+    public void submitStationForm() {
+        DriverInstance.waitFindByTestId("create-charger-submit").click();
+    }
+
+    @Then("I get confirmation that the station was created")
+    public void getStationCreationConfirmation() {
+        DriverInstance.waitFindByTestId("charger-creation-success");
     }
 
 }

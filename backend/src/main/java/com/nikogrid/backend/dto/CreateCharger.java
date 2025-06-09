@@ -10,7 +10,7 @@ public class CreateCharger {
     @NotBlank
     public String name;
 
-    public boolean available = true;
+    boolean available = true;
 
     @NotNull
     public float maxPower;

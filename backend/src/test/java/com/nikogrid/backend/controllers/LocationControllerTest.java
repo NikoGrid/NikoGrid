@@ -330,7 +330,7 @@ class LocationControllerTest {
     @Requirement("NIK-20")
     void createChargerNoLocation() throws Exception {
         final CreateCharger req = new CreateCharger();
-        req.available = true;
+        req.setAvailable(true);
         req.name = "AAA1";
         req.maxPower = 250;
 
@@ -365,7 +365,7 @@ class LocationControllerTest {
         });
 
         final CreateCharger req = new CreateCharger();
-        req.available = true;
+        req.setAvailable(true);
         req.name = "AAA1";
         req.maxPower = 250;
 

@@ -7,7 +7,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useUser } from "@/hooks/use-user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CirclePlus } from "lucide-react";
 import { useState } from "react";
@@ -48,7 +47,11 @@ export default function CreateLocation() {
 
   const { mutate } = $api.useMutation("post", "/api/v1/locations/", {
     onSuccess: (values) => {
-      toast(`The location ${values.name} was created`);
+      toast.success(
+        <div datatest-id="location-creation-success">
+          The location {values.name} was created
+        </div>,
+      );
       setDialogOpen(false);
     },
     onError: (err) => {
@@ -60,8 +63,9 @@ export default function CreateLocation() {
     mutate({ body: { ...values } });
   };
 
-  const user = useUser();
-  if (!user) return;
+  const { data, isError } = $api.useQuery("get", "/api/v1/auth/me");
+
+  if (isError || !data?.admin) return;
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

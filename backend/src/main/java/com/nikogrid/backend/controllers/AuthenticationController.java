@@ -5,6 +5,8 @@ import com.nikogrid.backend.auth.SecurityConstants;
 import com.nikogrid.backend.dto.AuthResponse;
 import com.nikogrid.backend.dto.LoginDTO;
 import com.nikogrid.backend.dto.RegisterDTO;
+import com.nikogrid.backend.dto.UserDTO;
+import com.nikogrid.backend.exceptions.ResourceNotFound;
 import com.nikogrid.backend.services.AuthenticationService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -82,6 +85,17 @@ public class AuthenticationController {
         final var cookie = configureCookie(null, 0, request.isSecure());
         response.addCookie(cookie);
         return new AuthResponse();
+    }
+
+    @GetMapping("/me")
+    @PostMapping("isAuthenticated()")
+    public UserDTO getInfo() throws ResourceNotFound {
+        final var principal = SecurityContextHolder.getContext().getAuthentication().getName();
+        return UserDTO.fromUser(
+                this.authenticationService.
+                        getUserByEmail(principal).
+                        orElseThrow(ResourceNotFound::new)
+        );
     }
 
 

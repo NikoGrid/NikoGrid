@@ -2,6 +2,7 @@ import { $api } from "@/api/client";
 import { mediaQueryHelpers, useMediaQuery } from "@/hooks/use-media-query";
 import type { Dispatch, SetStateAction } from "react";
 import { ChargerCard } from "./charger-card";
+import CreateCharger from "./create-charger";
 import {
   Drawer,
   DrawerContent,
@@ -81,6 +82,7 @@ function Details({ stationId, wrapper }: DetailsProps) {
           <ChargerCard charger={charger} />
         ))}
       </div>
+      <CreateCharger locationId={data.id} />
     </>
   );
 }

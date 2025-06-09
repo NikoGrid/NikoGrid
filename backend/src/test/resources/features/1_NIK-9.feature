@@ -6,9 +6,10 @@ Feature: Station Management
 		Given I have the admin account
 		When I open the application
         And I am authenticated as admin
-		And I click the button to create a new station
+		And I click the button to create a new location
 		Then I see a location creation form
 		And when I input the name 'A', the latitude 0 and the longitude 0
+		And when I submit the form to create a location
 		And I browse for stations at 0.0, 0.0
 		Then I get the stations:
 		  | name      |

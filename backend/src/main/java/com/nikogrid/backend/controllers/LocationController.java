@@ -65,7 +65,7 @@ public class LocationController {
         final var charger = new Charger();
         charger.setMaxPower(req.maxPower);
         charger.setName(req.name);
-        charger.setAvailable(req.available);
+        charger.setAvailable(req.isAvailable());
         charger.setLocation(location);
         return ChargerDTO.fromCharger(chargerService.createCharger(charger));
     }
@@ -116,4 +116,5 @@ public class LocationController {
                 chargers
         );
     }
+
 }
