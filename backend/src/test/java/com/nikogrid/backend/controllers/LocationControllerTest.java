@@ -4,15 +4,19 @@ import app.getxray.xray.junit.customjunitxml.annotations.Requirement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nikogrid.backend.TestSecurityBeans;
 import com.nikogrid.backend.auth.SecurityConfig;
+import com.nikogrid.backend.dto.ChargerDTO;
 import com.nikogrid.backend.dto.ClusterInterestPoint;
+import com.nikogrid.backend.dto.CreateCharger;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationInterestPoint;
 import com.nikogrid.backend.entities.BackendUserDetails;
+import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.entities.User;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
+import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.LocationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +56,9 @@ class LocationControllerTest {
 
     @MockitoBean
     private LocationService locationService;
+
+    @MockitoBean
+    private ChargerService chargerService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -316,5 +323,66 @@ class LocationControllerTest {
                 .andExpect(content().json(objectMapper.writeValueAsString(res)));
 
         Mockito.verify(locationService, Mockito.times(1)).getLocationById(1L);
+    }
+
+    @Test
+    @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Requirement("NIK-20")
+    void createChargerNoLocation() throws Exception {
+        final CreateCharger req = new CreateCharger();
+        req.available = true;
+        req.name = "AAA1";
+        req.maxPower = 250;
+
+        Mockito.when(locationService.getLocationById(Mockito.anyLong())).thenThrow(ResourceNotFound.class);
+
+        mvc.perform(post("/api/v1/locations/1")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
+
+        Mockito.verify(chargerService, Mockito.times(0)).createCharger(Mockito.any());
+    }
+
+    @Test
+    @WithUserDetails(setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @Requirement("NIK-20")
+    void createChargerOk() throws Exception {
+        Mockito.when(chargerService.createCharger(Mockito.any())).thenAnswer(i -> {
+            final Charger l = i.getArgument(0);
+            l.setId(1L);
+            return l;
+        });
+
+        Mockito.when(locationService.getLocationById(Mockito.anyLong())).thenAnswer(i -> {
+            final Location l = new Location();
+            l.setId(1L);
+            l.setName("AAA1");
+            l.setLat(0);
+            l.setLon(0);
+            return l;
+        });
+
+        final CreateCharger req = new CreateCharger();
+        req.available = true;
+        req.name = "AAA1";
+        req.maxPower = 250;
+
+        final ChargerDTO expected = new ChargerDTO(
+                1L,
+                "AAA1",
+                true,
+                250
+        );
+
+        mvc.perform(post("/api/v1/locations/1")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(req)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(content().json(objectMapper.writeValueAsString(expected)));
+
+        Mockito.verify(chargerService, Mockito.times(1)).createCharger(Mockito.any());
     }
 }

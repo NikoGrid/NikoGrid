@@ -1,3 +1,4 @@
+import CreateLocation from "@/components/create-location";
 import MapSearch from "@/components/map-search";
 import StationDetails from "@/components/station-details";
 import Stations from "@/components/stations";
@@ -70,6 +71,7 @@ function RouteComponent() {
             setHighlightedLocation={setHighlightedId}
           />
         </MapContainer>
+        <CreateLocation />
       </main>
     </div>
   );
