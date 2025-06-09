@@ -47,7 +47,7 @@ export default function CreateCharger({ locationId }: { locationId: number }) {
 
   const { mutate } = $api.useMutation(
     "post",
-    "/api/v1/locations/{locationId}",
+    "/api/v1/locations/{locationId}/chargers",
     {
       onSuccess: (values) => {
         toast.success(

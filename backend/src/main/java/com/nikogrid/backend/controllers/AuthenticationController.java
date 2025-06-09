@@ -88,7 +88,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/me")
-    @PostMapping("isAuthenticated()")
+    @PreAuthorize("isAuthenticated()")
     public UserDTO getInfo() throws ResourceNotFound {
         final var principal = SecurityContextHolder.getContext().getAuthentication().getName();
         return UserDTO.fromUser(

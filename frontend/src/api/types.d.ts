@@ -20,7 +20,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/api/v1/locations/{locationId}": {
+  "/api/v1/locations/{locationId}/chargers": {
     parameters: {
       query?: never;
       header?: never;

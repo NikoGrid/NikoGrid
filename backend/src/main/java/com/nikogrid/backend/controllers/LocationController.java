@@ -38,12 +38,10 @@ import java.util.Set;
 @Validated
 public class LocationController {
     private final LocationService locationService;
-    private final ChargerService chargerService;
 
     @Autowired
     public LocationController(LocationService locationService, ChargerService chargerService) {
         this.locationService = locationService;
-        this.chargerService = chargerService;
     }
 
     @PostMapping("/")
@@ -55,19 +53,6 @@ public class LocationController {
         location.setLat(req.getLat());
         location.setLon(req.getLon());
         return LocationDTO.fromLocation(this.locationService.createLocation(location));
-    }
-
-    @PostMapping("/{locationId}")
-    @PreAuthorize("principal.getUser().isAdmin()")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ChargerDTO createCharger(@PathVariable long locationId, @Valid @RequestBody CreateCharger req) throws ResourceNotFound {
-        final var location = locationService.getLocationById(locationId);
-        final var charger = new Charger();
-        charger.setMaxPower(req.maxPower);
-        charger.setName(req.name);
-        charger.setAvailable(req.isAvailable());
-        charger.setLocation(location);
-        return ChargerDTO.fromCharger(chargerService.createCharger(charger));
     }
 
     @GetMapping("/nearby")

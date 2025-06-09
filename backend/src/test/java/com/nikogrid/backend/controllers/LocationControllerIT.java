@@ -201,69 +201,6 @@ class LocationControllerIT {
                 .andExpect(content().json(objectMapper.writeValueAsString(expected)));
     }
 
-    @Test
-    @WithUserDetails(value = "admin@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
-    @Requirement("NIK-20")
-    void createChargerOk() throws Exception {
-        final var loc = this.locationRepository.save(createTestLocation("Test", 20, 30));
-
-
-        final CreateCharger req = new CreateCharger();
-        req.maxPower = 250;
-        req.name = "AAA1";
-
-        final var res = mvc.perform(post("/api/v1/locations/{id}", loc.getId())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-                .andReturn();
-
-        final ChargerDTO body = objectMapper.readValue(res.getResponse().getContentAsString(), ChargerDTO.class);
-        assertThat(body.name).isEqualTo(req.name);
-        assertThat(body.maxPower).isEqualTo(req.maxPower);
-        assertThat(body.isAvailable).isEqualTo(req.isAvailable());
-
-        assertThat(this.chargerRepository.findAll())
-                .hasSize(1)
-                .extracting(Charger::getId)
-                .containsExactlyInAnyOrder(body.id);
-
-    }
-
-    @Test
-    @WithUserDetails(value = "admin@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
-    @Requirement("NIK-20")
-    void createChargerNoLocation() throws Exception {
-        final CreateCharger req = new CreateCharger();
-        req.maxPower = 250;
-        req.name = "AAA1";
-
-        mvc.perform(post("/api/v1/locations/10")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isNotFound())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
-    }
-
-    @Test
-    @WithUserDetails(value = "user@test.com", setupBefore = TestExecutionEvent.TEST_EXECUTION)
-    @Requirement("NIK-20")
-    void createChargerNoAuthz() throws Exception {
-        final var loc = this.locationRepository.save(createTestLocation("Test", 20, 30));
-
-
-        final CreateCharger req = new CreateCharger();
-        req.maxPower = 250;
-        req.name = "AAA1";
-
-        mvc.perform(post("/api/v1/locations/{id}", loc.getId())
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(req)))
-                .andExpect(status().isForbidden())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE));
-    }
-
     private Location createTestLocation(String name, float lon, float lat) {
         final Location loc = new Location();
         loc.setName(name);
