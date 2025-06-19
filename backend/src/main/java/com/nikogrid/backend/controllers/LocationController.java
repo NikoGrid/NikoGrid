@@ -1,12 +1,15 @@
 package com.nikogrid.backend.controllers;
 
 import com.nikogrid.backend.dto.ChargerDTO;
+import com.nikogrid.backend.dto.CreateCharger;
 import com.nikogrid.backend.dto.CreateLocation;
 import com.nikogrid.backend.dto.InterestPointBaseDTO;
 import com.nikogrid.backend.dto.LocationDTO;
 import com.nikogrid.backend.dto.LocationDetailsDTO;
+import com.nikogrid.backend.entities.Charger;
 import com.nikogrid.backend.entities.Location;
 import com.nikogrid.backend.exceptions.ResourceNotFound;
+import com.nikogrid.backend.services.ChargerService;
 import com.nikogrid.backend.services.LocationService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -37,7 +40,7 @@ public class LocationController {
     private final LocationService locationService;
 
     @Autowired
-    public LocationController(LocationService locationService) {
+    public LocationController(LocationService locationService, ChargerService chargerService) {
         this.locationService = locationService;
     }
 
@@ -98,4 +101,5 @@ public class LocationController {
                 chargers
         );
     }
+
 }

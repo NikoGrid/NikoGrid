@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,5 +55,14 @@ class ChargerServiceImplTest {
                 .isInstanceOf(ResourceNotFound.class);
 
         Mockito.verify(this.chargerRepository, Mockito.times(1)).findById(1L);
+    }
+
+    @Test
+    @Requirement("NIK-20")
+    void createChargerPersists() {
+        assertThatNoException().isThrownBy(() -> this.chargerService.createCharger(new Charger()));
+
+        // Verify that the service persisted the menu to the repo
+        Mockito.verify(this.chargerRepository, Mockito.times(1)).save(Mockito.any());
     }
 }

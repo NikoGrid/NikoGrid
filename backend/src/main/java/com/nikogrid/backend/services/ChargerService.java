@@ -5,4 +5,5 @@ import com.nikogrid.backend.exceptions.ResourceNotFound;
 
 public interface ChargerService {
     Charger findChargerById(Long id) throws ResourceNotFound;
+    Charger createCharger(Charger charger);
 }

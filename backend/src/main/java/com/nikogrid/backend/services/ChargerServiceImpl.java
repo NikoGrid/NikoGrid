@@ -20,4 +20,9 @@ public class ChargerServiceImpl implements ChargerService {
         return this.chargerRepository.findById(id)
                 .orElseThrow(ResourceNotFound::new);
     }
+
+    @Override
+    public Charger createCharger(Charger charger) {
+        return this.chargerRepository.save(charger);
+    }
 }

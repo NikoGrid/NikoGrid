@@ -241,4 +241,9 @@ class AuthenticationControllerTest {
                 .andExpect(cookie().maxAge(SecurityConstants.AUTH_COOKIE, 0));
     }
 
+    @Test
+    void getUserDetails_NoAuth() throws Exception {
+        mvc.perform(get("/api/v1/auth/me"))
+                .andExpect(status().isUnauthorized());
+    }
 }

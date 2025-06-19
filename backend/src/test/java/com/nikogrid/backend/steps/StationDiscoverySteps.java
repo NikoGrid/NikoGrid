@@ -142,6 +142,21 @@ public class StationDiscoverySteps {
         );
     }
 
+    @When("I browse for the station closest to {double}, {double}")
+    public void iBrowseForStationClosest(double lat, double lon) {
+        var addrInput = DriverInstance.waitFindByTestId("address-input");
+        var coordsButton = DriverInstance.waitFindByTestId("find-closest");
+
+        addrInput.sendKeys(String.format("%f,%f", lat, lon));
+        coordsButton.click();
+        var wait = new WebDriverWait(DriverInstance.getDriver(), Duration.ofHours(2));
+        var pane = DriverInstance.getDriver().findElement(By.className("leaflet-map-pane"));
+        wait.until(d -> !d.findElement(By.cssSelector("[data-test-id='location-loading']")).isDisplayed()
+                && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-zoom-anim")
+                && !Objects.requireNonNull(pane.getAttribute("class")).contains("leaflet-pan-anim")
+        );
+    }
+
     @Then("I get the stations:")
     public void iGetTheStations(List<Location> locations) {
         var items = DriverInstance.waitFindByTestGroup("location");
